@@ -1,0 +1,40 @@
+declare class RendaFixaSimulator {
+    private chart;
+    private currentResult;
+    constructor();
+    private initializeEventListeners;
+    private setupFormValidation;
+    private validateInput;
+    private showInputError;
+    private clearError;
+    private handleFormSubmit;
+    private handleFormChange;
+    private getFormData;
+    private validateFormData;
+    private simulate;
+    private converterPrazoParaDias;
+    private converterTaxaParaDiaria;
+    private calcularSchedule;
+    private getFrequenciaCapitalizacao;
+    private calcularSaldoBruto;
+    private calcularIR;
+    private getAliquotaIR;
+    private calcularIOF;
+    private getAliquotaIOF;
+    private calcularTotais;
+    private displayResults;
+    private updateTable;
+    private createChart;
+    private exportToCSV;
+    private exportToPDF;
+    private generateCSV;
+    private generatePDF;
+    private downloadFile;
+    private formatCurrency;
+    private showLoading;
+    private hideLoading;
+    private showGeneralError;
+    private debounce;
+}
+export default RendaFixaSimulator;
+//# sourceMappingURL=renda-fixa.d.ts.map

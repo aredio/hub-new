@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Imposto sobre Investimentos - Hub Financeiro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="impostos.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button class="back-button" onclick="window.location.href='index.html'">← Voltar ao Hub</button>
+            <h1>📋 Calculadora de Imposto sobre Investimentos</h1>
+            <p>Calcule IR sobre investimentos, importe operações via CSV e gere relatórios detalhados</p>
+            <div class="data-source">
+                <span>📊 Baseado na legislação brasileira de IR sobre investimentos</span>
+            </div>
+        </header>
+
+        <div class="calculator-container">
+            <!-- Import Section -->
+            <div class="import-section" id="importSection">
+                <div class="section-header">
+                    <h2>📁 Importar Operações</h2>
+                    <p>Faça upload do arquivo CSV com suas operações de investimento</p>
+                </div>
+
+                <div class="import-options">
+                    <div class="import-method">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">📤</div>
+                            <h3>Arraste e solte seu arquivo CSV aqui</h3>
+                            <p>ou clique para selecionar</p>
+                            <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                            <button class="upload-button" onclick="document.getElementById('csvFile').click()">
+                                Selecionar Arquivo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="template-section">
+                        <h3>📄 Template de Importação</h3>
+                        <p>Baixe o template padrão para formatar suas operações corretamente</p>
+                        <div class="template-info">
+                            <div class="template-columns">
+                                <h4>Colunas obrigatórias:</h4>
+                                <ul>
+                                    <li><strong>Tipo:</strong> COMPRA, VENDA</li>
+                                    <li><strong>Ativo:</strong> Código do ativo (ex: PETR4, VALE3)</li>
+                                    <li><strong>Data:</strong> DD/MM/AAAA</li>
+                                    <li><strong>Preço:</strong> Preço unitário</li>
+                                    <li><strong>Quantidade:</strong> Número de ações/títulos</li>
+                                    <li><strong>Taxas:</strong> Taxas de corretagem (opcional)</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <button class="download-template" onclick="downloadTemplate()">
+                            📥 Baixar Template CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="import-status" id="importStatus" style="display: none;">
+                    <div class="status-content">
+                        <div class="status-icon">⏳</div>
+                        <div class="status-text">
+                            <h4>Processando arquivo...</h4>
+                            <p id="statusMessage">Validando dados...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="section-header">
+                    <h2>📊 Resultados do Cálculo de IR</h2>
+                    <div class="results-actions">
+                        <button class="action-button secondary" onclick="showImportSection()">
+                            📁 Nova Importação
+                        </button>
+                        <button class="action-button" onclick="exportToCSV()">
+                            📄 Exportar CSV
+                        </button>
+                        <button class="action-button" onclick="exportToPDF()">
+                            📋 Gerar PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="card-icon">💰</div>
+                        <div class="card-content">
+                            <h3>Total de Operações</h3>
+                            <span class="card-value" id="totalOperations">0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">📈</div>
+                        <div class="card-content">
+                            <h3>Lucro Tributável</h3>
+                            <span class="card-value" id="taxableProfit">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">📉</div>
+                        <div class="card-content">
+                            <h3>Prejuízo Compensável</h3>
+                            <span class="card-value" id="compensableLoss">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">🏛️</div>
+                        <div class="card-content">
+                            <h3>IR a Pagar</h3>
+                            <span class="card-value" id="taxToPay">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Results -->
+                <div class="detailed-results">
+                    <div class="results-tabs">
+                        <button class="tab-button active" onclick="showTab('byAsset')">Por Ativo</button>
+                        <button class="tab-button" onclick="showTab('byYear')">Por Ano</button>
+                        <button class="tab-button" onclick="showTab('operations')">Operações</button>
+                        <button class="tab-button" onclick="showTab('rules')">Regras Aplicadas</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- By Asset Tab -->
+                        <div class="tab-panel active" id="byAssetTab">
+                            <h3>Resultados por Ativo</h3>
+                            <div class="table-container">
+                                <table id="assetTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Ativo</th>
+                                            <th>Operações</th>
+                                            <th>Volume</th>
+                                            <th>Lucro/Prejuízo</th>
+                                            <th>IR Devido</th>
+                                            <th>Regime</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assetTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- By Year Tab -->
+                        <div class="tab-panel" id="byYearTab">
+                            <h3>Resultados por Ano</h3>
+                            <div class="year-summary">
+                                <div class="year-chart">
+                                    <canvas id="yearChart"></canvas>
+                                </div>
+                                <div class="year-table">
+                                    <table id="yearTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Ano</th>
+                                                <th>Lucro Tributável</th>
+                                                <th>Prejuízo</th>
+                                                <th>IR Devido</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="yearTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Operations Tab -->
+                        <div class="tab-panel" id="operationsTab">
+                            <h3>Detalhamento das Operações</h3>
+                            <div class="operations-filters">
+                                <select id="assetFilter">
+                                    <option value="">Todos os ativos</option>
+                                </select>
+                                <select id="yearFilter">
+                                    <option value="">Todos os anos</option>
+                                </select>
+                                <button onclick="filterOperations()">Filtrar</button>
+                            </div>
+                            <div class="table-container">
+                                <table id="operationsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Tipo</th>
+                                            <th>Ativo</th>
+                                            <th>Quantidade</th>
+                                            <th>Preço</th>
+                                            <th>Valor Total</th>
+                                            <th>Taxas</th>
+                                            <th>Lucro/Prejuízo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="operationsTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Rules Tab -->
+                        <div class="tab-panel" id="rulesTab">
+                            <h3>Regras de Tributação Aplicadas</h3>
+                            <div class="rules-content">
+                                <div class="rule-section">
+                                    <h4>📋 Regras Gerais</h4>
+                                    <ul>
+                                        <li><strong>Alíquota de IR:</strong> 15% sobre o lucro</li>
+                                        <li><strong>Isenção:</strong> Vendas até R$ 20.000/mês</li>
+                                        <li><strong>Regime:</strong> Day Trade vs Swing Trade</li>
+                                        <li><strong>Compensação:</strong> Prejuízos podem ser compensados</li>
+                                    </ul>
+                                </div>
+                                <div class="rule-section">
+                                    <h4>🎯 Regras Específicas</h4>
+                                    <div id="specificRules">
+                                        <!-- Dynamic rules will be inserted here -->
+                                    </div>
+                                </div>
+                                <div class="rule-section">
+                                    <h4>📊 Cálculos Aplicados</h4>
+                                    <div id="calculationDetails">
+                                        <!-- Calculation details will be inserted here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <h3>❓ Como Usar</h3>
+                <div class="help-content">
+                    <div class="help-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Prepare seus dados</h4>
+                            <p>Organize suas operações de compra e venda em um arquivo CSV usando o template fornecido.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Importe o arquivo</h4>
+                            <p>Faça upload do arquivo CSV com suas operações. O sistema validará e processará os dados.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Analise os resultados</h4>
+                            <p>Visualize o cálculo de IR por ativo, ano e operação. Veja as regras aplicadas.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Exporte relatórios</h4>
+                            <p>Gere relatórios em CSV ou PDF para apresentar ao contador ou guardar para consulta.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Investment Tax Calculator
+        console.log('Investment Tax Calculator: Starting...');
+        
+        let operations = [];
+        let taxResults = {};
+        let currentTab = 'byAsset';
+        let yearChart = null;
+        
+        // Tax rules and rates
+        const TAX_RULES = {
+            irRate: 0.15, // 15% IR rate
+            exemptionLimit: 20000, // R$ 20,000 monthly exemption
+            dayTradeRate: 0.20, // 20% for day trading
+            minTaxableAmount: 0.01 // Minimum amount to be taxed
+        };
+        
+        // Initialize calculator
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Investment Tax Calculator: DOM loaded, initializing...');
+            setupEventListeners();
+            console.log('Investment Tax Calculator: Initialized successfully!');
+        });
+        
+        function setupEventListeners() {
+            // File upload
+            const fileInput = document.getElementById('csvFile');
+            const uploadArea = document.getElementById('uploadArea');
+            
+            fileInput.addEventListener('change', handleFileUpload);
+            
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('drag-over');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('drag-over');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+        }
+        
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+        
+        function handleFile(file) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showError('Por favor, selecione um arquivo CSV válido.');
+                return;
+            }
+            
+            showImportStatus('Lendo arquivo...');
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const csvData = e.target.result;
+                    parseCSV(csvData);
+                } catch (error) {
+                    console.error('Error reading file:', error);
+                    showError('Erro ao ler o arquivo. Verifique se é um CSV válido.');
+                }
+            };
+            
+            reader.readAsText(file, 'UTF-8');
+        }
+        
+        function parseCSV(csvData) {
+            showImportStatus('Processando dados...');
+            
+            try {
+                const lines = csvData.split('\n');
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+                
+                // Validate headers
+                const requiredHeaders = ['tipo', 'ativo', 'data', 'preço', 'quantidade'];
+                const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+                
+                if (missingHeaders.length > 0) {
+                    showError(`Colunas obrigatórias ausentes: ${missingHeaders.join(', ')}`);
+                    return;
+                }
+                
+                operations = [];
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const values = line.split(',').map(v => v.trim());
+                    if (values.length < requiredHeaders.length) continue;
+                    
+                    const operation = {
+                        tipo: values[headers.indexOf('tipo')].toUpperCase(),
+                        ativo: values[headers.indexOf('ativo')].toUpperCase(),
+                        data: values[headers.indexOf('data')],
+                        preco: parseFloat(values[headers.indexOf('preço')].replace(',', '.')),
+                        quantidade: parseInt(values[headers.indexOf('quantidade')]),
+                        taxas: parseFloat(values[headers.indexOf('taxas')] || '0'.replace(',', '.'))
+                    };
+                    
+                    // Validate operation
+                    if (isValidOperation(operation)) {
+                        operations.push(operation);
+                    }
+                }
+                
+                if (operations.length === 0) {
+                    showError('Nenhuma operação válida encontrada no arquivo.');
+                    return;
+                }
+                
+                showImportStatus('Calculando impostos...');
+                calculateTaxes();
+                
+            } catch (error) {
+                console.error('Error parsing CSV:', error);
+                showError('Erro ao processar o arquivo CSV. Verifique o formato.');
+            }
+        }
+        
+        function isValidOperation(operation) {
+            return operation.tipo && 
+                   operation.ativo && 
+                   operation.data && 
+                   !isNaN(operation.preco) && 
+                   !isNaN(operation.quantidade) &&
+                   operation.preco > 0 &&
+                   operation.quantidade > 0;
+        }
+        
+        function calculateTaxes() {
+            try {
+                // Group operations by asset and calculate P&L
+                const assetResults = {};
+                const yearResults = {};
+                
+                // Process each operation
+                operations.forEach(op => {
+                    const asset = op.ativo;
+                    const year = new Date(op.data.split('/').reverse().join('-')).getFullYear();
+                    
+                    if (!assetResults[asset]) {
+                        assetResults[asset] = {
+                            operations: [],
+                            totalVolume: 0,
+                            totalProfit: 0,
+                            totalLoss: 0,
+                            netResult: 0,
+                            taxDue: 0,
+                            regime: 'swing'
+                        };
+                    }
+                    
+                    if (!yearResults[year]) {
+                        yearResults[year] = {
+                            totalProfit: 0,
+                            totalLoss: 0,
+                            taxDue: 0,
+                            operations: 0
+                        };
+                    }
+                    
+                    const operationValue = op.preco * op.quantidade;
+                    const totalValue = operationValue + op.taxas;
+                    
+                    assetResults[asset].operations.push({
+                        ...op,
+                        valorTotal: totalValue
+                    });
+                    
+                    assetResults[asset].totalVolume += totalValue;
+                    yearResults[year].operations++;
+                    
+                    // Calculate P&L for sales
+                    if (op.tipo === 'VENDA') {
+                        // Simple FIFO calculation (simplified)
+                        const profit = calculateProfitForSale(assetResults[asset], op);
+                        assetResults[asset].totalProfit += Math.max(0, profit);
+                        assetResults[asset].totalLoss += Math.max(0, -profit);
+                        assetResults[asset].netResult += profit;
+                        
+                        yearResults[year].totalProfit += Math.max(0, profit);
+                        yearResults[year].totalLoss += Math.max(0, -profit);
+                    }
+                });
+                
+                // Calculate taxes
+                Object.keys(assetResults).forEach(asset => {
+                    const result = assetResults[asset];
+                    result.taxDue = Math.max(0, result.netResult * TAX_RULES.irRate);
+                });
+                
+                Object.keys(yearResults).forEach(year => {
+                    const result = yearResults[year];
+                    result.taxDue = Math.max(0, (result.totalProfit - result.totalLoss) * TAX_RULES.irRate);
+                });
+                
+                taxResults = {
+                    byAsset: assetResults,
+                    byYear: yearResults,
+                    totalOperations: operations.length,
+                    totalTaxableProfit: Object.values(assetResults).reduce((sum, r) => sum + r.totalProfit, 0),
+                    totalCompensableLoss: Object.values(assetResults).reduce((sum, r) => sum + r.totalLoss, 0),
+                    totalTaxDue: Object.values(assetResults).reduce((sum, r) => sum + r.taxDue, 0)
+                };
+                
+                showResults();
+                
+            } catch (error) {
+                console.error('Error calculating taxes:', error);
+                showError('Erro ao calcular impostos. Verifique os dados.');
+            }
+        }
+        
+        function calculateProfitForSale(assetData, saleOp) {
+            // Simplified FIFO calculation
+            const buyOps = assetData.operations.filter(op => op.tipo === 'COMPRA');
+            if (buyOps.length === 0) return 0;
+            
+            let remainingQuantity = saleOp.quantidade;
+            let totalCost = 0;
+            
+            for (let buyOp of buyOps) {
+                if (remainingQuantity <= 0) break;
+                
+                const usedQuantity = Math.min(remainingQuantity, buyOp.quantidade);
+                totalCost += (buyOp.preco * usedQuantity) + (buyOp.taxas * usedQuantity / buyOp.quantidade);
+                remainingQuantity -= usedQuantity;
+            }
+            
+            const saleValue = (saleOp.preco * saleOp.quantidade) - saleOp.taxas;
+            return saleValue - totalCost;
+        }
+        
+        function showResults() {
+            hideImportStatus();
+            document.getElementById('importSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            updateSummaryCards();
+            updateAssetTable();
+            updateYearTable();
+            updateOperationsTable();
+            createYearChart();
+        }
+        
+        function updateSummaryCards() {
+            document.getElementById('totalOperations').textContent = taxResults.totalOperations;
+            document.getElementById('taxableProfit').textContent = formatCurrency(taxResults.totalTaxableProfit);
+            document.getElementById('compensableLoss').textContent = formatCurrency(taxResults.totalCompensableLoss);
+            document.getElementById('taxToPay').textContent = formatCurrency(taxResults.totalTaxDue);
+        }
+        
+        function updateAssetTable() {
+            const tbody = document.getElementById('assetTableBody');
+            tbody.innerHTML = '';
+            
+            Object.entries(taxResults.byAsset).forEach(([asset, data]) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${asset}</td>
+                    <td>${data.operations.length}</td>
+                    <td>${formatCurrency(data.totalVolume)}</td>
+                    <td class="${data.netResult >= 0 ? 'profit' : 'loss'}">
+                        ${formatCurrency(data.netResult)}
+                    </td>
+                    <td>${formatCurrency(data.taxDue)}</td>
+                    <td>${data.regime}</td>
+                `;
+            });
+        }
+        
+        function updateYearTable() {
+            const tbody = document.getElementById('yearTableBody');
+            tbody.innerHTML = '';
+            
+            Object.entries(taxResults.byYear).forEach(([year, data]) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${year}</td>
+                    <td>${formatCurrency(data.totalProfit)}</td>
+                    <td>${formatCurrency(data.totalLoss)}</td>
+                    <td>${formatCurrency(data.taxDue)}</td>
+                    <td>${data.taxDue > 0 ? 'Tributável' : 'Isento'}</td>
+                `;
+            });
+        }
+        
+        function updateOperationsTable() {
+            const tbody = document.getElementById('operationsTableBody');
+            tbody.innerHTML = '';
+            
+            operations.forEach(op => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${op.data}</td>
+                    <td class="operation-type ${op.tipo.toLowerCase()}">${op.tipo}</td>
+                    <td>${op.ativo}</td>
+                    <td>${op.quantidade}</td>
+                    <td>${formatCurrency(op.preco)}</td>
+                    <td>${formatCurrency(op.preco * op.quantidade)}</td>
+                    <td>${formatCurrency(op.taxas)}</td>
+                    <td>--</td>
+                `;
+            });
+        }
+        
+        function createYearChart() {
+            const ctx = document.getElementById('yearChart').getContext('2d');
+            
+            if (yearChart) {
+                yearChart.destroy();
+            }
+            
+            const years = Object.keys(taxResults.byYear).sort();
+            const profits = years.map(year => taxResults.byYear[year].totalProfit);
+            const losses = years.map(year => taxResults.byYear[year].totalLoss);
+            const taxes = years.map(year => taxResults.byYear[year].taxDue);
+            
+            yearChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: years,
+                    datasets: [
+                        {
+                            label: 'Lucros',
+                            data: profits,
+                            backgroundColor: '#27ae60',
+                            borderColor: '#2ecc71',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Prejuízos',
+                            data: losses,
+                            backgroundColor: '#e74c3c',
+                            borderColor: '#c0392b',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'IR Devido',
+                            data: taxes,
+                            backgroundColor: '#3498db',
+                            borderColor: '#2980b9',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': R$ ' + context.parsed.y.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function showTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+            
+            // Update tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            
+            currentTab = tabName;
+        }
+        
+        function showImportSection() {
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('importSection').style.display = 'block';
+            
+            // Reset form
+            document.getElementById('csvFile').value = '';
+            operations = [];
+            taxResults = {};
+        }
+        
+        function downloadTemplate() {
+            const csvContent = 'Tipo,Ativo,Data,Preço,Quantidade,Taxas\n' +
+                              'COMPRA,PETR4,01/01/2024,25.50,100,2.50\n' +
+                              'VENDA,PETR4,15/01/2024,26.80,100,2.50\n' +
+                              'COMPRA,VALE3,02/01/2024,45.20,50,1.25\n' +
+                              'VENDA,VALE3,20/01/2024,47.10,50,1.25';
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'template_operacoes.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function exportToCSV() {
+            let csvContent = 'Relatório de IR sobre Investimentos\n\n';
+            csvContent += 'Resumo Geral\n';
+            csvContent += `Total de Operações,${taxResults.totalOperations}\n`;
+            csvContent += `Lucro Tributável,${formatCurrency(taxResults.totalTaxableProfit)}\n`;
+            csvContent += `Prejuízo Compensável,${formatCurrency(taxResults.totalCompensableLoss)}\n`;
+            csvContent += `IR a Pagar,${formatCurrency(taxResults.totalTaxDue)}\n\n`;
+            
+            csvContent += 'Resultados por Ativo\n';
+            csvContent += 'Ativo,Operações,Volume,Lucro/Prejuízo,IR Devido\n';
+            Object.entries(taxResults.byAsset).forEach(([asset, data]) => {
+                csvContent += `${asset},${data.operations.length},${formatCurrency(data.totalVolume)},${formatCurrency(data.netResult)},${formatCurrency(data.taxDue)}\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `relatorio_ir_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Title
+            doc.setFontSize(20);
+            doc.text('Relatório de IR sobre Investimentos', 20, 20);
+            
+            // Summary
+            doc.setFontSize(12);
+            doc.text('Resumo Geral:', 20, 40);
+            doc.text(`Total de Operações: ${taxResults.totalOperations}`, 20, 50);
+            doc.text(`Lucro Tributável: ${formatCurrency(taxResults.totalTaxableProfit)}`, 20, 60);
+            doc.text(`Prejuízo Compensável: ${formatCurrency(taxResults.totalCompensableLoss)}`, 20, 70);
+            doc.text(`IR a Pagar: ${formatCurrency(taxResults.totalTaxDue)}`, 20, 80);
+            
+            // Add new page for asset details
+            doc.addPage();
+            doc.text('Resultados por Ativo:', 20, 20);
+            
+            let y = 30;
+            Object.entries(taxResults.byAsset).forEach(([asset, data]) => {
+                if (y > 250) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.text(`${asset}: ${formatCurrency(data.netResult)} (IR: ${formatCurrency(data.taxDue)})`, 20, y);
+                y += 10;
+            });
+            
+            doc.save(`relatorio_ir_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+        
+        function showImportStatus(message) {
+            const status = document.getElementById('importStatus');
+            const messageEl = document.getElementById('statusMessage');
+            messageEl.textContent = message;
+            status.style.display = 'block';
+        }
+        
+        function hideImportStatus() {
+            document.getElementById('importStatus').style.display = 'none';
+        }
+        
+        function showError(message) {
+            hideImportStatus();
+            alert('Erro: ' + message);
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+        
+        function filterOperations() {
+            // Implementation for filtering operations
+            console.log('Filtering operations...');
+        }
+    </script>
+</body>
+</html>
+

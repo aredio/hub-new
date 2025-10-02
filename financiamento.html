@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Financiamentos (SAC x PRICE) - Hub Financeiro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="financiamento.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button class="back-button" onclick="window.location.href='index.html'">← Voltar ao Hub</button>
+            <h1>🏠 Simulador de Financiamentos (SAC x PRICE)</h1>
+            <p>Compare os sistemas SAC e PRICE para financiamentos imobiliários e veículos</p>
+            <div class="data-source">
+                <span>📊 Cálculos baseados nas fórmulas oficiais dos sistemas de amortização</span>
+            </div>
+        </header>
+
+        <div class="simulator-container">
+            <!-- Input Form -->
+            <div class="input-section">
+                <div class="form-header">
+                    <h2>📝 Dados do Financiamento</h2>
+                    <p>Preencha os dados para simular o financiamento</p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="financingType">Tipo de Financiamento</label>
+                        <select id="financingType" onchange="updateFormLabels()">
+                            <option value="imovel">Imóvel</option>
+                            <option value="veiculo">Veículo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="propertyValue" id="propertyValueLabel">Valor do Imóvel</label>
+                        <div class="input-with-icon">
+                            <span class="currency-symbol">R$</span>
+                            <input type="number" id="propertyValue" placeholder="0,00" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="downPayment">Valor da Entrada</label>
+                        <div class="input-with-icon">
+                            <span class="currency-symbol">R$</span>
+                            <input type="number" id="downPayment" placeholder="0,00" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="financingAmount">Valor Financiado</label>
+                        <div class="input-with-icon">
+                            <span class="currency-symbol">R$</span>
+                            <input type="number" id="financingAmount" placeholder="0,00" step="0.01" min="0" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interestRate">Taxa de Juros (a.a.)</label>
+                        <div class="input-with-icon">
+                            <span class="percentage-symbol">%</span>
+                            <input type="number" id="interestRate" placeholder="0,00" step="0.01" min="0" max="100">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="termMonths">Prazo (meses)</label>
+                        <input type="number" id="termMonths" placeholder="0" min="1" max="480">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="calculationMode">Modo de Cálculo</label>
+                        <select id="calculationMode" onchange="toggleCalculationMode()">
+                            <option value="compare">Comparar SAC x PRICE</option>
+                            <option value="sac">Apenas SAC</option>
+                            <option value="price">Apenas PRICE</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="action-button primary" onclick="calculateFinancing()">
+                        🧮 Calcular Financiamento
+                    </button>
+                    <button class="action-button secondary" onclick="clearForm()">
+                        🗑️ Limpar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-header">
+                    <h2>📊 Resultados da Simulação</h2>
+                    <div class="results-actions">
+                        <button class="action-button" onclick="exportToPDF()">
+                            📄 Exportar PDF
+                        </button>
+                        <button class="action-button secondary" onclick="exportToExcel()">
+                            📊 Exportar Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards" id="summaryCards">
+                    <!-- Summary cards will be dynamically generated -->
+                </div>
+
+                <!-- Comparison Charts -->
+                <div class="charts-section">
+                    <div class="chart-container">
+                        <h3>Evolução do Saldo Devedor</h3>
+                        <canvas id="balanceChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Comparação de Parcelas</h3>
+                        <canvas id="paymentChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Detailed Comparison -->
+                <div class="comparison-section">
+                    <div class="comparison-tabs">
+                        <button class="tab-button active" onclick="showComparisonTab('summary')">Resumo</button>
+                        <button class="tab-button" onclick="showComparisonTab('schedules')">Cronogramas</button>
+                        <button class="tab-button" onclick="showComparisonTab('analysis')">Análise</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- Summary Tab -->
+                        <div class="tab-panel active" id="summaryTab">
+                            <div class="comparison-table">
+                                <table id="summaryTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Métrica</th>
+                                            <th>SAC</th>
+                                            <th>PRICE</th>
+                                            <th>Diferença</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="summaryTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Schedules Tab -->
+                        <div class="tab-panel" id="schedulesTab">
+                            <div class="schedules-container">
+                                <div class="schedule-section" id="sacScheduleSection">
+                                    <h3>SAC - Sistema de Amortização Constante</h3>
+                                    <div class="schedule-controls">
+                                        <input type="text" id="sacSearch" placeholder="Buscar período..." onkeyup="filterSchedule('sac')">
+                                        <select id="sacPageSize" onchange="changePageSize('sac')">
+                                            <option value="12">12 períodos</option>
+                                            <option value="24">24 períodos</option>
+                                            <option value="36">36 períodos</option>
+                                            <option value="all">Todos</option>
+                                        </select>
+                                    </div>
+                                    <div class="table-container">
+                                        <table id="sacScheduleTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Período</th>
+                                                    <th>Saldo Inicial</th>
+                                                    <th>Parcela</th>
+                                                    <th>Amortização</th>
+                                                    <th>Juros</th>
+                                                    <th>Saldo Final</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="sacScheduleBody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="pagination" id="sacPagination">
+                                    </div>
+                                </div>
+
+                                <div class="schedule-section" id="priceScheduleSection">
+                                    <h3>PRICE - Sistema de Amortização Francesa</h3>
+                                    <div class="schedule-controls">
+                                        <input type="text" id="priceSearch" placeholder="Buscar período..." onkeyup="filterSchedule('price')">
+                                        <select id="pricePageSize" onchange="changePageSize('price')">
+                                            <option value="12">12 períodos</option>
+                                            <option value="24">24 períodos</option>
+                                            <option value="36">36 períodos</option>
+                                            <option value="all">Todos</option>
+                                        </select>
+                                    </div>
+                                    <div class="table-container">
+                                        <table id="priceScheduleTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Período</th>
+                                                    <th>Saldo Inicial</th>
+                                                    <th>Parcela</th>
+                                                    <th>Amortização</th>
+                                                    <th>Juros</th>
+                                                    <th>Saldo Final</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="priceScheduleBody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="pagination" id="pricePagination">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Analysis Tab -->
+                        <div class="tab-panel" id="analysisTab">
+                            <div class="analysis-content">
+                                <div class="analysis-section">
+                                    <h3>📈 Análise Comparativa</h3>
+                                    <div class="analysis-grid">
+                                        <div class="analysis-card">
+                                            <h4>Vantagens do SAC</h4>
+                                            <ul>
+                                                <li>Menor valor total pago</li>
+                                                <li>Amortização constante</li>
+                                                <li>Menor tempo para quitar</li>
+                                                <li>Menos juros acumulados</li>
+                                            </ul>
+                                        </div>
+                                        <div class="analysis-card">
+                                            <h4>Vantagens do PRICE</h4>
+                                            <ul>
+                                                <li>Parcelas fixas</li>
+                                                <li>Facilita planejamento</li>
+                                                <li>Menor impacto inicial</li>
+                                                <li>Previsibilidade orçamentária</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="analysis-section">
+                                    <h3>💡 Recomendações</h3>
+                                    <div class="recommendations" id="recommendations">
+                                        <!-- Recommendations will be dynamically generated -->
+                                    </div>
+                                </div>
+
+                                <div class="analysis-section">
+                                    <h3>📊 Cenários Alternativos</h3>
+                                    <div class="scenarios">
+                                        <div class="scenario-card">
+                                            <h4>Entrada de 20%</h4>
+                                            <p>Impacto de aumentar a entrada para 20% do valor</p>
+                                            <button class="scenario-button" onclick="simulateScenario('downPayment20')">
+                                                Simular
+                                            </button>
+                                        </div>
+                                        <div class="scenario-card">
+                                            <h4>Prazo de 15 anos</h4>
+                                            <p>Comparação com prazo de 180 meses</p>
+                                            <button class="scenario-button" onclick="simulateScenario('term15years')">
+                                                Simular
+                                            </button>
+                                        </div>
+                                        <div class="scenario-card">
+                                            <h4>Taxa 1% menor</h4>
+                                            <p>Impacto de uma taxa de juros menor</p>
+                                            <button class="scenario-button" onclick="simulateScenario('lowerRate')">
+                                                Simular
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <h3>❓ Como Usar</h3>
+                <div class="help-content">
+                    <div class="help-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Preencha os dados</h4>
+                            <p>Informe o valor do imóvel/veículo, entrada, taxa de juros e prazo desejado.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Escolha o modo</h4>
+                            <p>Compare SAC x PRICE ou simule apenas um sistema específico.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Analise os resultados</h4>
+                            <p>Compare totais pagos, cronogramas e evolução do saldo devedor.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Exporte o relatório</h4>
+                            <p>Gere PDF ou Excel com todos os detalhes da simulação.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Financing Simulator (SAC x PRICE)
+        console.log('Financing Simulator: Starting...');
+        
+        let currentResults = null;
+        let currentTab = 'summary';
+        let balanceChart = null;
+        let paymentChart = null;
+        
+        // Initialize simulator
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Financing Simulator: DOM loaded, initializing...');
+            setupEventListeners();
+            updateFormLabels();
+            console.log('Financing Simulator: Initialized successfully!');
+        });
+        
+        function setupEventListeners() {
+            // Auto-calculate financing amount
+            document.getElementById('propertyValue').addEventListener('input', calculateFinancingAmount);
+            document.getElementById('downPayment').addEventListener('input', calculateFinancingAmount);
+            
+            // Format inputs
+            document.getElementById('propertyValue').addEventListener('blur', formatCurrency);
+            document.getElementById('downPayment').addEventListener('blur', formatCurrency);
+            document.getElementById('interestRate').addEventListener('blur', formatPercentage);
+        }
+        
+        function updateFormLabels() {
+            const type = document.getElementById('financingType').value;
+            const label = document.getElementById('propertyValueLabel');
+            
+            if (type === 'imovel') {
+                label.textContent = 'Valor do Imóvel';
+            } else {
+                label.textContent = 'Valor do Veículo';
+            }
+        }
+        
+        function calculateFinancingAmount() {
+            const propertyValue = parseFloat(document.getElementById('propertyValue').value) || 0;
+            const downPayment = parseFloat(document.getElementById('downPayment').value) || 0;
+            const financingAmount = propertyValue - downPayment;
+            
+            document.getElementById('financingAmount').value = financingAmount.toFixed(2);
+        }
+        
+        function formatCurrency(event) {
+            const value = parseFloat(event.target.value) || 0;
+            event.target.value = value.toFixed(2);
+        }
+        
+        function formatPercentage(event) {
+            const value = parseFloat(event.target.value) || 0;
+            event.target.value = value.toFixed(2);
+        }
+        
+        function toggleCalculationMode() {
+            const mode = document.getElementById('calculationMode').value;
+            // This could be used to show/hide specific options
+        }
+        
+        function calculateFinancing() {
+            // Get form values
+            const propertyValue = parseFloat(document.getElementById('propertyValue').value) || 0;
+            const downPayment = parseFloat(document.getElementById('downPayment').value) || 0;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const termMonths = parseInt(document.getElementById('termMonths').value) || 0;
+            const mode = document.getElementById('calculationMode').value;
+            
+            // Validation
+            if (propertyValue <= 0) {
+                alert('Por favor, informe o valor do imóvel/veículo.');
+                return;
+            }
+            
+            if (downPayment >= propertyValue) {
+                alert('A entrada deve ser menor que o valor total.');
+                return;
+            }
+            
+            if (interestRate <= 0) {
+                alert('Por favor, informe a taxa de juros.');
+                return;
+            }
+            
+            if (termMonths <= 0) {
+                alert('Por favor, informe o prazo em meses.');
+                return;
+            }
+            
+            const financingAmount = propertyValue - downPayment;
+            const monthlyRate = interestRate / 100 / 12;
+            
+            // Calculate based on mode
+            let results = {};
+            
+            if (mode === 'compare' || mode === 'sac') {
+                results.sac = calculateSAC(financingAmount, monthlyRate, termMonths);
+            }
+            
+            if (mode === 'compare' || mode === 'price') {
+                results.price = calculatePRICE(financingAmount, monthlyRate, termMonths);
+            }
+            
+            currentResults = {
+                ...results,
+                propertyValue,
+                downPayment,
+                financingAmount,
+                interestRate,
+                termMonths,
+                mode
+            };
+            
+            showResults();
+        }
+        
+        function calculateSAC(principal, monthlyRate, termMonths) {
+            const amortization = principal / termMonths;
+            const schedule = [];
+            let balance = principal;
+            let totalInterest = 0;
+            
+            for (let month = 1; month <= termMonths; month++) {
+                const interest = balance * monthlyRate;
+                const payment = amortization + interest;
+                const newBalance = balance - amortization;
+                
+                schedule.push({
+                    month,
+                    initialBalance: balance,
+                    payment,
+                    amortization,
+                    interest,
+                    finalBalance: newBalance
+                });
+                
+                totalInterest += interest;
+                balance = newBalance;
+            }
+            
+            return {
+                schedule,
+                totalInterest,
+                totalPaid: principal + totalInterest,
+                firstPayment: schedule[0].payment,
+                lastPayment: schedule[schedule.length - 1].payment
+            };
+        }
+        
+        function calculatePRICE(principal, monthlyRate, termMonths) {
+            // PRICE formula: PMT = PV * [i * (1 + i)^n] / [(1 + i)^n - 1]
+            const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, termMonths)) / 
+                           (Math.pow(1 + monthlyRate, termMonths) - 1);
+            
+            const schedule = [];
+            let balance = principal;
+            let totalInterest = 0;
+            
+            for (let month = 1; month <= termMonths; month++) {
+                const interest = balance * monthlyRate;
+                const amortization = payment - interest;
+                const newBalance = balance - amortization;
+                
+                schedule.push({
+                    month,
+                    initialBalance: balance,
+                    payment,
+                    amortization,
+                    interest,
+                    finalBalance: newBalance
+                });
+                
+                totalInterest += interest;
+                balance = newBalance;
+            }
+            
+            return {
+                schedule,
+                totalInterest,
+                totalPaid: principal + totalInterest,
+                payment
+            };
+        }
+        
+        function showResults() {
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            updateSummaryCards();
+            createCharts();
+            updateSummaryTable();
+            updateSchedules();
+            updateRecommendations();
+            
+            // Scroll to results
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function updateSummaryCards() {
+            const container = document.getElementById('summaryCards');
+            container.innerHTML = '';
+            
+            if (currentResults.sac) {
+                const sacCard = createSummaryCard('SAC', currentResults.sac, '#3498db');
+                container.appendChild(sacCard);
+            }
+            
+            if (currentResults.price) {
+                const priceCard = createSummaryCard('PRICE', currentResults.price, '#e74c3c');
+                container.appendChild(priceCard);
+            }
+        }
+        
+        function createSummaryCard(system, data, color) {
+            const card = document.createElement('div');
+            card.className = 'summary-card';
+            card.style.borderLeftColor = color;
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3>${system}</h3>
+                    <div class="system-badge" style="background-color: ${color}">${system}</div>
+                </div>
+                <div class="card-metrics">
+                    <div class="metric">
+                        <span class="metric-label">Total Pago:</span>
+                        <span class="metric-value">${formatCurrency(data.totalPaid)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total Juros:</span>
+                        <span class="metric-value">${formatCurrency(data.totalInterest)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">1ª Parcela:</span>
+                        <span class="metric-value">${formatCurrency(data.firstPayment || data.payment)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Última Parcela:</span>
+                        <span class="metric-value">${formatCurrency(data.lastPayment || data.payment)}</span>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function createCharts() {
+            createBalanceChart();
+            createPaymentChart();
+        }
+        
+        function createBalanceChart() {
+            const ctx = document.getElementById('balanceChart').getContext('2d');
+            
+            if (balanceChart) {
+                balanceChart.destroy();
+            }
+            
+            const datasets = [];
+            const labels = [];
+            
+            if (currentResults.sac) {
+                labels.push(...currentResults.sac.schedule.map((_, i) => `Mês ${i + 1}`));
+                datasets.push({
+                    label: 'SAC',
+                    data: currentResults.sac.schedule.map(period => period.finalBalance),
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3,
+                    fill: false
+                });
+            }
+            
+            if (currentResults.price) {
+                if (labels.length === 0) {
+                    labels.push(...currentResults.price.schedule.map((_, i) => `Mês ${i + 1}`));
+                }
+                datasets.push({
+                    label: 'PRICE',
+                    data: currentResults.price.schedule.map(period => period.finalBalance),
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    borderWidth: 3,
+                    fill: false
+                });
+            }
+            
+            balanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': R$ ' + context.parsed.y.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createPaymentChart() {
+            const ctx = document.getElementById('paymentChart').getContext('2d');
+            
+            if (paymentChart) {
+                paymentChart.destroy();
+            }
+            
+            const datasets = [];
+            const labels = [];
+            
+            if (currentResults.sac) {
+                labels.push(...currentResults.sac.schedule.map((_, i) => `Mês ${i + 1}`));
+                datasets.push({
+                    label: 'SAC',
+                    data: currentResults.sac.schedule.map(period => period.payment),
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3,
+                    fill: false
+                });
+            }
+            
+            if (currentResults.price) {
+                if (labels.length === 0) {
+                    labels.push(...currentResults.price.schedule.map((_, i) => `Mês ${i + 1}`));
+                }
+                datasets.push({
+                    label: 'PRICE',
+                    data: currentResults.price.schedule.map(period => period.payment),
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    borderWidth: 3,
+                    fill: false
+                });
+            }
+            
+            paymentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': R$ ' + context.parsed.y.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateSummaryTable() {
+            const tbody = document.getElementById('summaryTableBody');
+            tbody.innerHTML = '';
+            
+            const metrics = [
+                { label: 'Total Pago', sac: currentResults.sac?.totalPaid, price: currentResults.price?.totalPaid },
+                { label: 'Total Juros', sac: currentResults.sac?.totalInterest, price: currentResults.price?.totalInterest },
+                { label: '1ª Parcela', sac: currentResults.sac?.firstPayment, price: currentResults.price?.payment },
+                { label: 'Última Parcela', sac: currentResults.sac?.lastPayment, price: currentResults.price?.payment }
+            ];
+            
+            metrics.forEach(metric => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = metric.label;
+                
+                const sacCell = row.insertCell();
+                sacCell.textContent = metric.sac ? formatCurrency(metric.sac) : '--';
+                
+                const priceCell = row.insertCell();
+                priceCell.textContent = metric.price ? formatCurrency(metric.price) : '--';
+                
+                const diffCell = row.insertCell();
+                if (metric.sac && metric.price) {
+                    const diff = metric.sac - metric.price;
+                    diffCell.textContent = formatCurrency(diff);
+                    diffCell.className = diff < 0 ? 'positive' : 'negative';
+                } else {
+                    diffCell.textContent = '--';
+                }
+            });
+        }
+        
+        function updateSchedules() {
+            if (currentResults.sac) {
+                updateScheduleTable('sac', currentResults.sac.schedule);
+            }
+            
+            if (currentResults.price) {
+                updateScheduleTable('price', currentResults.price.schedule);
+            }
+        }
+        
+        function updateScheduleTable(system, schedule) {
+            const tbody = document.getElementById(`${system}ScheduleBody`);
+            tbody.innerHTML = '';
+            
+            schedule.forEach(period => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = period.month;
+                row.insertCell().textContent = formatCurrency(period.initialBalance);
+                row.insertCell().textContent = formatCurrency(period.payment);
+                row.insertCell().textContent = formatCurrency(period.amortization);
+                row.insertCell().textContent = formatCurrency(period.interest);
+                row.insertCell().textContent = formatCurrency(period.finalBalance);
+            });
+        }
+        
+        function updateRecommendations() {
+            const container = document.getElementById('recommendations');
+            container.innerHTML = '';
+            
+            if (currentResults.sac && currentResults.price) {
+                const sacTotal = currentResults.sac.totalPaid;
+                const priceTotal = currentResults.price.totalPaid;
+                const difference = sacTotal - priceTotal;
+                
+                let recommendation = '';
+                
+                if (difference < 0) {
+                    recommendation = `
+                        <div class="recommendation-card sac-recommended">
+                            <h4>💡 Recomendação: SAC</h4>
+                            <p>O sistema SAC é mais vantajoso, economizando <strong>${formatCurrency(Math.abs(difference))}</strong> 
+                            em relação ao PRICE. Você pagará menos juros no total.</p>
+                        </div>
+                    `;
+                } else {
+                    recommendation = `
+                        <div class="recommendation-card price-recommended">
+                            <h4>💡 Recomendação: PRICE</h4>
+                            <p>O sistema PRICE é mais vantajoso, economizando <strong>${formatCurrency(difference)}</strong> 
+                            em relação ao SAC. As parcelas fixas facilitam o planejamento.</p>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = recommendation;
+            }
+        }
+        
+        function showComparisonTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="showComparisonTab('${tabName}')"]`).classList.add('active');
+            
+            // Update tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            
+            currentTab = tabName;
+        }
+        
+        function filterSchedule(system) {
+            // Implementation for filtering schedule tables
+            console.log(`Filtering ${system} schedule...`);
+        }
+        
+        function changePageSize(system) {
+            // Implementation for changing page size
+            console.log(`Changing page size for ${system}...`);
+        }
+        
+        function simulateScenario(scenario) {
+            // Implementation for scenario simulation
+            console.log(`Simulating scenario: ${scenario}`);
+        }
+        
+        function clearForm() {
+            document.getElementById('propertyValue').value = '';
+            document.getElementById('downPayment').value = '';
+            document.getElementById('financingAmount').value = '';
+            document.getElementById('interestRate').value = '';
+            document.getElementById('termMonths').value = '';
+            document.getElementById('calculationMode').value = 'compare';
+            
+            document.getElementById('resultsSection').style.display = 'none';
+            currentResults = null;
+        }
+        
+        function exportToPDF() {
+            // Implementation for PDF export
+            console.log('Exporting to PDF...');
+            alert('Funcionalidade de exportação PDF será implementada em breve!');
+        }
+        
+        function exportToExcel() {
+            // Implementation for Excel export
+            console.log('Exporting to Excel...');
+            alert('Funcionalidade de exportação Excel será implementada em breve!');
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+    </script>
+</body>
+</html>
+

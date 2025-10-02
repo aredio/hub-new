@@ -1,0 +1,556 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    animation: pageSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: white;
+}
+
+header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.button-container {
+    position: relative;
+    height: 200px;
+}
+
+.financial-button {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.1), -8px -8px 16px rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    text-align: center;
+    transform: translateY(0) scale(1);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.financial-button:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 16px 16px 32px rgba(0, 0, 0, 0.12), -16px -16px 32px rgba(255, 255, 255, 0.8);
+    background: linear-gradient(145deg, #f8f9ff, #e8eaff);
+}
+
+.financial-button:active {
+    transform: translateY(-4px) scale(0.98);
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.15), -4px -4px 8px rgba(255, 255, 255, 0.6);
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.button-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: scale(1) rotate(0deg);
+}
+
+.financial-button:hover .button-icon {
+    transform: scale(1.15) rotate(3deg);
+}
+
+.financial-button:active .button-icon {
+    transform: scale(1.05) rotate(1deg);
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.button-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateY(0);
+}
+
+.financial-button:hover .button-title {
+    color: #3498db;
+    transform: translateY(-3px);
+}
+
+.financial-button:active .button-title {
+    transform: translateY(-1px);
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.button-description {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0 0 20px 20px;
+    transform: translateY(100%);
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity: 0;
+    visibility: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.financial-button:hover .button-description {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.financial-button:active .button-description {
+    transform: translateY(5%);
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.button-description h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.button-description p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    opacity: 0.95;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .buttons-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .button-container {
+        height: 180px;
+    }
+    
+    .financial-button {
+        padding: 1rem;
+    }
+    
+    .button-icon {
+        font-size: 2.5rem;
+    }
+    
+    .button-title {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+    
+    header p {
+        font-size: 1rem;
+    }
+    
+    .button-container {
+        height: 160px;
+    }
+    
+    .button-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .button-title {
+        font-size: 1.1rem;
+    }
+    
+    .button-description {
+        padding: 1rem;
+    }
+    
+    .button-description h3 {
+        font-size: 1rem;
+    }
+    
+    .button-description p {
+        font-size: 0.8rem;
+    }
+}
+
+/* Animation for page load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Ripple effect for button clicks */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.financial-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    pointer-events: none;
+}
+
+.financial-button:active::before {
+    width: 300px;
+    height: 300px;
+    animation: ripple 0.6s ease-out;
+}
+
+/* Smooth focus states for accessibility */
+.financial-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3), 8px 8px 16px rgba(0, 0, 0, 0.1), -8px -8px 16px rgba(255, 255, 255, 0.7);
+}
+
+.financial-button:focus:hover {
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.4), 16px 16px 32px rgba(0, 0, 0, 0.12), -16px -16px 32px rgba(255, 255, 255, 0.8);
+}
+
+/* Enhanced action button styles for individual pages */
+.action-button {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    transform: translateY(0) scale(1);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.action-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    background: linear-gradient(135deg, #2980b9, #1f5f8b);
+}
+
+.action-button:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.action-button.primary {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+
+.action-button.primary:hover {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+}
+
+.action-button.secondary {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+}
+
+.action-button.secondary:hover {
+    background: linear-gradient(135deg, #7f8c8d, #95a5a6);
+    box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+}
+
+/* Ripple effect for action buttons */
+.action-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+    pointer-events: none;
+}
+
+.action-button:active::before {
+    width: 200px;
+    height: 200px;
+    animation: ripple 0.4s ease-out;
+}
+
+/* Focus states for action buttons */
+.action-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3), 0 4px 12px rgba(52, 152, 219, 0.2);
+}
+
+.action-button.primary:focus {
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.3), 0 4px 12px rgba(39, 174, 96, 0.2);
+}
+
+.action-button.secondary:focus {
+    box-shadow: 0 0 0 3px rgba(149, 165, 166, 0.3), 0 4px 12px rgba(149, 165, 166, 0.2);
+}
+
+/* Smooth transitions for form elements */
+input, select, textarea {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+input:focus, select:focus, textarea:focus {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+/* Smooth transitions for cards and containers */
+.card, .summary-card, .chart-container {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.card:hover, .summary-card:hover, .chart-container:hover {
+    transform: translateY(-2px);
+}
+
+/* Smooth transitions for tabs */
+.tab-button {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.tab-button:hover {
+    transform: translateY(-1px);
+}
+
+.tab-button.active {
+    transform: translateY(-2px);
+}
+
+/* Smooth transitions for table rows */
+tbody tr {
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+tbody tr:hover {
+    transform: scale(1.01);
+}
+
+/* Smooth transitions for navigation elements */
+.back-button {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    transform: translateX(0) scale(1);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.back-button:hover {
+    transform: translateX(-5px) scale(1.08);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.back-button:active {
+    transform: translateX(-2px) scale(1.02);
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Ripple effect for back button */
+.back-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+    pointer-events: none;
+}
+
+.back-button:active::before {
+    width: 150px;
+    height: 150px;
+    animation: ripple 0.4s ease-out;
+}
+
+/* Focus state for back button */
+.back-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+/* Smooth transitions for icons */
+.icon, .button-icon {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.icon:hover, .button-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Smooth page transitions */
+.page-transition {
+    animation: pageSlideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes pageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Page load animation for individual pages */
+body {
+    animation: pageLoadFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes pageLoadFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Smooth back button navigation */
+.back-button {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.back-button:hover {
+    transform: translateX(-5px) scale(1.08);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+.back-button:active {
+    transform: translateX(-2px) scale(1.02);
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Smooth loading states */
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Smooth error states */
+.error-shake {
+    animation: shake 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.button-container {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.button-container:nth-child(1) { animation-delay: 0.1s; }
+.button-container:nth-child(2) { animation-delay: 0.2s; }
+.button-container:nth-child(3) { animation-delay: 0.3s; }
+.button-container:nth-child(4) { animation-delay: 0.4s; }
+.button-container:nth-child(5) { animation-delay: 0.5s; }
+.button-container:nth-child(6) { animation-delay: 0.6s; }
+.button-container:nth-child(7) { animation-delay: 0.7s; }
+.button-container:nth-child(8) { animation-delay: 0.8s; }

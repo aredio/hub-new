@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Alocação de Ativos - Hub Financeiro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="alocacao.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button class="back-button" onclick="window.location.href='index.html'">← Voltar ao Hub</button>
+            <h1>🎯 Calculadora de Alocação de Ativos</h1>
+            <p>Descubra seu perfil de investidor e receba sugestões personalizadas</p>
+        </header>
+
+        <div class="calculator-container">
+            <!-- Questionário -->
+            <div class="questionnaire-section" id="questionnaireSection">
+                <div class="questionnaire-card">
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-text" id="progressText">Pergunta 1 de 10</span>
+                    </div>
+
+                    <div class="question-container" id="questionContainer">
+                        <!-- Questions will be dynamically loaded here -->
+                    </div>
+
+                    <div class="question-navigation">
+                        <button class="nav-button" id="prevButton" onclick="previousQuestion()" disabled>← Anterior</button>
+                        <button class="nav-button" id="nextButton" onclick="nextQuestion()">Próxima →</button>
+                        <button class="nav-button finish-button" id="finishButton" onclick="finishQuestionnaire()" style="display: none;">Finalizar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resultados -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-card">
+                    <h2>Seu Perfil de Investidor</h2>
+                    
+                    <!-- Perfil Resultado -->
+                    <div class="profile-result">
+                        <div class="profile-badge" id="profileBadge">
+                            <div class="profile-icon" id="profileIcon">🎯</div>
+                            <div class="profile-info">
+                                <h3 id="profileName">Perfil</h3>
+                                <p id="profileDescription">Descrição do perfil</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alocação Sugerida -->
+                    <div class="allocation-section">
+                        <h3>Alocação Sugerida</h3>
+                        <div class="allocation-container">
+                            <div class="chart-container">
+                                <canvas id="allocationChart"></canvas>
+                            </div>
+                            <div class="allocation-details" id="allocationDetails">
+                                <!-- Allocation details will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Justificativa -->
+                    <div class="rationale-section">
+                        <h3>Justificativa da Estratégia</h3>
+                        <div class="rationale-content" id="rationaleContent">
+                            <!-- Rationale will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Ajuste Manual -->
+                    <div class="adjustment-section">
+                        <h3>Ajuste Manual da Alocação</h3>
+                        <p>Você pode ajustar os percentuais conforme sua preferência:</p>
+                        
+                        <div class="sliders-container" id="slidersContainer">
+                            <!-- Sliders will be dynamically created here -->
+                        </div>
+
+                        <div class="total-validation">
+                            <div class="total-display">
+                                <span>Total: </span>
+                                <span id="totalPercentage" class="total-percentage">100%</span>
+                            </div>
+                            <div class="validation-message" id="validationMessage"></div>
+                        </div>
+
+                        <div class="adjustment-actions">
+                            <button class="action-button" onclick="resetToSuggested()">Resetar para Sugerido</button>
+                            <button class="action-button primary" onclick="saveAllocation()">Salvar Alocação</button>
+                        </div>
+                    </div>
+
+                    <!-- Ações Finais -->
+                    <div class="final-actions">
+                        <button class="action-button" onclick="restartQuestionnaire()">Refazer Questionário</button>
+                        <button class="action-button" onclick="exportResults()">Exportar Resultados</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Working Asset Allocation Calculator
+        console.log('Asset Allocation Calculator: Starting...');
+        
+        let currentQuestion = 0;
+        let answers = [];
+        let calculator = null;
+        
+        const questions = [
+            {
+                id: 1,
+                question: "Qual é o seu objetivo principal com os investimentos?",
+                description: "Considere seus objetivos de longo prazo",
+                options: [
+                    { id: "a", text: "Preservar o capital e ter renda estável", description: "Foco em segurança e rendimentos previsíveis", score: 10 },
+                    { id: "b", text: "Crescer o patrimônio moderadamente", description: "Equilíbrio entre crescimento e segurança", score: 30 },
+                    { id: "c", text: "Maximizar o crescimento do patrimônio", description: "Aceita maior risco para maiores retornos", score: 50 },
+                    { id: "d", text: "Acelerar o crescimento com alta volatilidade", description: "Busca retornos agressivos e especulativos", score: 70 }
+                ]
+            },
+            {
+                id: 2,
+                question: "Qual é o seu horizonte de investimento?",
+                description: "Em quanto tempo você pretende usar este dinheiro?",
+                options: [
+                    { id: "a", text: "Menos de 1 ano", description: "Curto prazo - liquidez é prioridade", score: 10 },
+                    { id: "b", text: "1 a 3 anos", description: "Médio prazo - equilíbrio entre risco e retorno", score: 25 },
+                    { id: "c", text: "3 a 10 anos", description: "Longo prazo - pode assumir mais risco", score: 45 },
+                    { id: "d", text: "Mais de 10 anos", description: "Muito longo prazo - pode ser mais agressivo", score: 65 }
+                ]
+            },
+            {
+                id: 3,
+                question: "Como você reagiria a uma queda de 20% no valor dos seus investimentos?",
+                description: "Considere sua tolerância emocional ao risco",
+                options: [
+                    { id: "a", text: "Venderia tudo imediatamente", description: "Baixa tolerância ao risco", score: 5 },
+                    { id: "b", text: "Venderia parte dos investimentos", description: "Tolerância moderada ao risco", score: 20 },
+                    { id: "c", text: "Manteria os investimentos", description: "Boa tolerância ao risco", score: 40 },
+                    { id: "d", text: "Aumentaria os investimentos", description: "Alta tolerância ao risco", score: 60 }
+                ]
+            }
+        ];
+        
+        function loadQuestion() {
+            console.log('Loading question:', currentQuestion);
+            const question = questions[currentQuestion];
+            const container = document.getElementById('questionContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            if (!container || !progressFill || !progressText) {
+                console.error('Required DOM elements not found');
+                return;
+            }
+            
+            // Update progress
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `Pergunta ${currentQuestion + 1} de ${questions.length}`;
+            
+            // Load question
+            container.innerHTML = `
+                <div class="question">
+                    <h3>${question.question}</h3>
+                    <p>${question.description}</p>
+                    <div class="options-container">
+                        ${question.options.map(option => `
+                            <div class="option" data-option-id="${option.id}" onclick="selectOption('${option.id}')">
+                                <div class="option-text">${option.text}</div>
+                                <div class="option-description">${option.description}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            updateNavigationButtons();
+        }
+        
+        function selectOption(optionId) {
+            console.log('Option selected:', optionId);
+            
+            // Remove previous selection
+            document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+            
+            // Add new selection
+            const selectedElement = document.querySelector(`[data-option-id="${optionId}"]`);
+            if (selectedElement) {
+                selectedElement.classList.add('selected');
+            }
+            
+            // Save answer
+            const question = questions[currentQuestion];
+            const option = question.options.find(opt => opt.id === optionId);
+            
+            if (option) {
+                const existingAnswerIndex = answers.findIndex(answer => answer.questionId === question.id);
+                const answer = {
+                    questionId: question.id,
+                    optionId: optionId,
+                    score: option.score
+                };
+                
+                if (existingAnswerIndex >= 0) {
+                    answers[existingAnswerIndex] = answer;
+                } else {
+                    answers.push(answer);
+                }
+            }
+            
+            updateNavigationButtons();
+        }
+        
+        function updateNavigationButtons() {
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            const finishButton = document.getElementById('finishButton');
+            
+            if (!prevButton || !nextButton || !finishButton) return;
+            
+            // Previous button
+            prevButton.disabled = currentQuestion === 0;
+            
+            // Next/Finish button
+            const hasAnswer = answers.some(answer => answer.questionId === questions[currentQuestion].id);
+            
+            if (currentQuestion === questions.length - 1) {
+                nextButton.style.display = 'none';
+                finishButton.style.display = 'inline-block';
+                finishButton.disabled = !hasAnswer;
+            } else {
+                nextButton.style.display = 'inline-block';
+                finishButton.style.display = 'none';
+                nextButton.disabled = !hasAnswer;
+            }
+        }
+        
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            }
+        }
+        
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+        
+        function finishQuestionnaire() {
+            if (answers.length !== questions.length) {
+                alert('Por favor, responda todas as perguntas antes de finalizar.');
+                return;
+            }
+            
+            calculateProfile();
+        }
+        
+        function calculateProfile() {
+            const totalScore = answers.reduce((sum, answer) => sum + answer.score, 0);
+            const averageScore = totalScore / answers.length;
+            
+            let profile;
+            if (averageScore < 35) {
+                profile = { type: 'Conservador', score: averageScore, description: 'Prioriza segurança e preservação do capital', icon: '🛡️' };
+            } else if (averageScore < 65) {
+                profile = { type: 'Moderado', score: averageScore, description: 'Busca equilíbrio entre crescimento e segurança', icon: '⚖️' };
+            } else {
+                profile = { type: 'Agressivo', score: averageScore, description: 'Busca maximizar o crescimento do patrimônio', icon: '🚀' };
+            }
+            
+            showResults(profile);
+        }
+        
+        function showResults(profile) {
+            // Hide questionnaire and show results
+            const questionnaireSection = document.getElementById('questionnaireSection');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            if (questionnaireSection && resultsSection) {
+                questionnaireSection.style.display = 'none';
+                resultsSection.style.display = 'block';
+            }
+            
+            // Update profile info
+            const profileIcon = document.getElementById('profileIcon');
+            const profileName = document.getElementById('profileName');
+            const profileDescription = document.getElementById('profileDescription');
+            
+            if (profileIcon) profileIcon.textContent = profile.icon;
+            if (profileName) profileName.textContent = profile.type;
+            if (profileDescription) profileDescription.textContent = profile.description;
+            
+            // Show allocation
+            const allocationDetails = document.getElementById('allocationDetails');
+            if (allocationDetails) {
+                let allocation;
+                if (profile.type === 'Conservador') {
+                    allocation = [
+                        { class: 'Renda Fixa', pct: 80 },
+                        { class: 'Fundos Conservadores', pct: 15 },
+                        { class: 'Ações', pct: 5 }
+                    ];
+                } else if (profile.type === 'Moderado') {
+                    allocation = [
+                        { class: 'Renda Fixa', pct: 50 },
+                        { class: 'Fundos', pct: 30 },
+                        { class: 'Ações', pct: 20 }
+                    ];
+                } else {
+                    allocation = [
+                        { class: 'Renda Fixa', pct: 20 },
+                        { class: 'Fundos', pct: 30 },
+                        { class: 'Ações', pct: 50 }
+                    ];
+                }
+                
+                allocationDetails.innerHTML = allocation.map(item => `
+                    <div class="allocation-item">
+                        <span class="allocation-class">${item.class}</span>
+                        <span class="allocation-percentage">${item.pct}%</span>
+                    </div>
+                `).join('');
+            }
+            
+            // Show rationale
+            const rationaleContent = document.getElementById('rationaleContent');
+            if (rationaleContent) {
+                let rationale;
+                if (profile.type === 'Conservador') {
+                    rationale = 'Perfil Conservador: Você prioriza a segurança e preservação do capital. Esta alocação é ideal para quem tem baixa tolerância ao risco, horizonte de investimento curto ou está próximo da aposentadoria.';
+                } else if (profile.type === 'Moderado') {
+                    rationale = 'Perfil Moderado: Você busca equilíbrio entre crescimento e segurança. Esta alocação oferece diversificação adequada para quem tem horizonte de médio a longo prazo e tolerância moderada ao risco.';
+                } else {
+                    rationale = 'Perfil Agressivo: Você busca maximizar o crescimento do patrimônio e tem alta tolerância ao risco. Esta alocação é ideal para investidores jovens, com horizonte de longo prazo e conhecimento avançado.';
+                }
+                rationaleContent.textContent = rationale;
+            }
+        }
+        
+        function restartQuestionnaire() {
+            currentQuestion = 0;
+            answers = [];
+            
+            const questionnaireSection = document.getElementById('questionnaireSection');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            if (questionnaireSection && resultsSection) {
+                questionnaireSection.style.display = 'block';
+                resultsSection.style.display = 'none';
+            }
+            
+            loadQuestion();
+        }
+        
+        function exportResults() {
+            const csvContent = 'Perfil,Score\n' + answers.map(answer => `${answer.questionId},${answer.score}`).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'perfil-investidor.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Asset Allocation Calculator: DOM loaded, initializing...');
+            calculator = { currentQuestion, answers, questions };
+            loadQuestion();
+            console.log('Asset Allocation Calculator: Initialized successfully!');
+        });
+    </script>
+</body>
+</html>

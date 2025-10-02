@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Indicadores Econômicos - Hub Financeiro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="indicadores.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button class="back-button" onclick="window.location.href='index.html'">← Voltar ao Hub</button>
+            <h1>📈 Dashboard de Indicadores Econômicos</h1>
+            <p>Monitore os principais indicadores econômicos do Brasil em tempo real</p>
+            <div class="data-source">
+                <span>📊 Dados oficiais do Banco Central do Brasil (SGS)</span>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <!-- Controles do Dashboard -->
+            <div class="dashboard-controls">
+                <div class="period-selector">
+                    <label for="periodSelect">Período:</label>
+                    <select id="periodSelect" onchange="changePeriod(this.value)">
+                        <option value="1D">Último Dia</option>
+                        <option value="1W">Última Semana</option>
+                        <option value="1M" selected>Último Mês</option>
+                        <option value="3M">Últimos 3 Meses</option>
+                        <option value="6M">Últimos 6 Meses</option>
+                        <option value="1Y">Último Ano</option>
+                        <option value="2Y">Últimos 2 Anos</option>
+                    </select>
+                </div>
+                <div class="refresh-controls">
+                    <button class="refresh-button" onclick="refreshData()">
+                        🔄 Atualizar
+                    </button>
+                    <span class="last-update" id="lastUpdate">Última atualização: --</span>
+                </div>
+            </div>
+
+            <!-- Cards de Indicadores -->
+            <div class="indicators-grid" id="indicatorsGrid">
+                <!-- Cards serão carregados dinamicamente -->
+            </div>
+
+            <!-- Gráficos Detalhados -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Evolução dos Indicadores</h3>
+                        <div class="chart-controls">
+                            <button class="chart-button active" onclick="showChart('all')">Todos</button>
+                            <button class="chart-button" onclick="showChart('selic')">Selic</button>
+                            <button class="chart-button" onclick="showChart('cdi')">CDI</button>
+                            <button class="chart-button" onclick="showChart('ipca')">IPCA</button>
+                            <button class="chart-button" onclick="showChart('ibovespa')">Ibovespa</button>
+                            <button class="chart-button" onclick="showChart('usd')">USD/BRL</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="mini-charts">
+                    <div class="mini-chart-container">
+                        <h4>Taxa Selic</h4>
+                        <canvas id="selicChart"></canvas>
+                        <div class="mini-chart-info">
+                            <span class="current-value" id="selicValue">--</span>
+                            <span class="change" id="selicChange">--</span>
+                        </div>
+                    </div>
+
+                    <div class="mini-chart-container">
+                        <h4>CDI</h4>
+                        <canvas id="cdiChart"></canvas>
+                        <div class="mini-chart-info">
+                            <span class="current-value" id="cdiValue">--</span>
+                            <span class="change" id="cdiChange">--</span>
+                        </div>
+                    </div>
+
+                    <div class="mini-chart-container">
+                        <h4>IPCA</h4>
+                        <canvas id="ipcaChart"></canvas>
+                        <div class="mini-chart-info">
+                            <span class="current-value" id="ipcaValue">--</span>
+                            <span class="change" id="ipcaChange">--</span>
+                        </div>
+                    </div>
+
+                    <div class="mini-chart-container">
+                        <h4>Ibovespa</h4>
+                        <canvas id="ibovespaChart"></canvas>
+                        <div class="mini-chart-info">
+                            <span class="current-value" id="ibovespaValue">--</span>
+                            <span class="change" id="ibovespaChange">--</span>
+                        </div>
+                    </div>
+
+                    <div class="mini-chart-container">
+                        <h4>USD/BRL</h4>
+                        <canvas id="usdChart"></canvas>
+                        <div class="mini-chart-info">
+                            <span class="current-value" id="usdValue">--</span>
+                            <span class="change" id="usdChange">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Histórico -->
+            <div class="history-section">
+                <h3>Histórico Detalhado</h3>
+                <div class="table-container">
+                    <table id="historyTable">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Selic</th>
+                                <th>CDI</th>
+                                <th>IPCA</th>
+                                <th>Ibovespa</th>
+                                <th>USD/BRL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Análise e Insights -->
+            <div class="analysis-section">
+                <h3>Análise e Insights</h3>
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <h4>📊 Tendência de Mercado</h4>
+                        <p id="marketTrend">Analisando dados...</p>
+                    </div>
+                    <div class="insight-card">
+                        <h4>💰 Impacto nos Investimentos</h4>
+                        <p id="investmentImpact">Analisando dados...</p>
+                    </div>
+                    <div class="insight-card">
+                        <h4>🏦 Política Monetária</h4>
+                        <p id="monetaryPolicy">Analisando dados...</p>
+                    </div>
+                    <div class="insight-card">
+                        <h4>🌍 Contexto Internacional</h4>
+                        <p id="internationalContext">Analisando dados...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Economic Indicators Dashboard
+        console.log('Economic Indicators Dashboard: Starting...');
+        
+        // Global variables
+        let indicatorsData = {};
+        let currentPeriod = '1M';
+        let mainChart = null;
+        let miniCharts = {};
+        let isLoading = false;
+        
+        // SGS API configuration
+        const SGS_API_BASE = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs';
+        const SGS_SERIES = {
+            selic: { code: 11, name: 'Taxa Selic', unit: '% a.a.', color: '#e74c3c' },
+            cdi: { code: 12, name: 'CDI', unit: '% a.a.', color: '#3498db' },
+            ipca: { code: 433, name: 'IPCA', unit: '% a.m.', color: '#f39c12' },
+            usd: { code: 1, name: 'USD/BRL', unit: 'R$', color: '#9b59b6' }
+        };
+        
+        // Ibovespa data (not available in SGS, using mock data)
+        function getIbovespaData() {
+            return {
+                name: 'Ibovespa',
+                unit: 'pontos',
+                color: '#27ae60',
+                current: 125847.32,
+                change: 1250.45,
+                changePercent: 1.00,
+                data: generateTimeSeriesData(125847.32, 2000, 30)
+            };
+        }
+        
+        function generateTimeSeriesData(baseValue, volatility, days) {
+            const data = [];
+            const today = new Date();
+            
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                
+                const randomChange = (Math.random() - 0.5) * volatility;
+                const value = baseValue + randomChange;
+                
+                data.push({
+                    date: date.toISOString().split('T')[0],
+                    value: Math.round(value * 10000) / 10000
+                });
+            }
+            
+            return data;
+        }
+        
+        async function initializeDashboard() {
+            console.log('Initializing dashboard...');
+            showLoadingState();
+            
+            try {
+                await fetchAllIndicators();
+                createIndicatorCards();
+                createMainChart();
+                createMiniCharts();
+                updateHistoryTable();
+                generateInsights();
+                updateLastUpdateTime();
+                hideLoadingState();
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                showErrorState('Erro ao carregar dados. Tentando novamente...');
+                // Fallback to mock data
+                setTimeout(() => {
+                    loadFallbackData();
+                    hideLoadingState();
+                }, 2000);
+            }
+        }
+        
+        async function fetchAllIndicators() {
+            const promises = Object.entries(SGS_SERIES).map(async ([key, series]) => {
+                try {
+                    const data = await fetchSGSData(series.code, getDateRange());
+                    return { key, data: processSGSData(data, series) };
+                } catch (error) {
+                    console.error(`Error fetching ${series.name}:`, error);
+                    return { key, data: getFallbackData(series) };
+                }
+            });
+            
+            const results = await Promise.all(promises);
+            
+            // Add Ibovespa data (mock for now)
+            indicatorsData = {
+                ...Object.fromEntries(results.map(r => [r.key, r.data])),
+                ibovespa: getIbovespaData()
+            };
+        }
+        
+        async function fetchSGSData(seriesCode, dateRange) {
+            const { startDate, endDate } = dateRange;
+            const url = `${SGS_API_BASE}.${seriesCode}/dados?formato=json&dataInicial=${startDate}&dataFinal=${endDate}`;
+            
+            console.log(`Fetching SGS data for series ${seriesCode}:`, url);
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log(`SGS data received for series ${seriesCode}:`, data.length, 'records');
+            return data;
+        }
+        
+        function processSGSData(rawData, series) {
+            if (!rawData || rawData.length === 0) {
+                return getFallbackData(series);
+            }
+            
+            // Sort by date (newest first)
+            const sortedData = rawData.sort((a, b) => new Date(b.data) - new Date(a.data));
+            
+            // Get current value (most recent)
+            const current = parseFloat(sortedData[0].valor);
+            
+            // Calculate change (current vs previous)
+            const previous = sortedData.length > 1 ? parseFloat(sortedData[1].valor) : current;
+            const change = current - previous;
+            const changePercent = previous !== 0 ? (change / previous) * 100 : 0;
+            
+            // Format data for charts
+            const chartData = sortedData.slice(0, 30).reverse().map(item => ({
+                date: item.data,
+                value: parseFloat(item.valor)
+            }));
+            
+            return {
+                name: series.name,
+                unit: series.unit,
+                color: series.color,
+                current: current,
+                change: change,
+                changePercent: changePercent,
+                data: chartData
+            };
+        }
+        
+        function getDateRange() {
+            const endDate = new Date();
+            const startDate = new Date();
+            
+            switch (currentPeriod) {
+                case '1D':
+                    startDate.setDate(endDate.getDate() - 1);
+                    break;
+                case '1W':
+                    startDate.setDate(endDate.getDate() - 7);
+                    break;
+                case '1M':
+                    startDate.setMonth(endDate.getMonth() - 1);
+                    break;
+                case '3M':
+                    startDate.setMonth(endDate.getMonth() - 3);
+                    break;
+                case '6M':
+                    startDate.setMonth(endDate.getMonth() - 6);
+                    break;
+                case '1Y':
+                    startDate.setFullYear(endDate.getFullYear() - 1);
+                    break;
+                case '2Y':
+                    startDate.setFullYear(endDate.getFullYear() - 2);
+                    break;
+                default:
+                    startDate.setMonth(endDate.getMonth() - 1);
+            }
+            
+            return {
+                startDate: formatDateForAPI(startDate),
+                endDate: formatDateForAPI(endDate)
+            };
+        }
+        
+        function formatDateForAPI(date) {
+            return date.toISOString().split('T')[0].split('-').reverse().join('/');
+        }
+        
+        function getFallbackData(series) {
+            // Fallback data when API fails
+            const fallbackValues = {
+                selic: { current: 10.75, change: -0.25, changePercent: -2.27 },
+                cdi: { current: 10.65, change: -0.20, changePercent: -1.84 },
+                ipca: { current: 0.42, change: 0.05, changePercent: 13.51 },
+                usd: { current: 5.1245, change: -0.0234, changePercent: -0.45 }
+            };
+            
+            const fallback = fallbackValues[Object.keys(SGS_SERIES).find(key => SGS_SERIES[key] === series)] || fallbackValues.selic;
+            
+            return {
+                name: series.name,
+                unit: series.unit,
+                color: series.color,
+                current: fallback.current,
+                change: fallback.change,
+                changePercent: fallback.changePercent,
+                data: generateTimeSeriesData(fallback.current, 0.1, 30)
+            };
+        }
+        
+        function loadFallbackData() {
+            console.log('Loading fallback data...');
+            indicatorsData = {
+                selic: getFallbackData(SGS_SERIES.selic),
+                cdi: getFallbackData(SGS_SERIES.cdi),
+                ipca: getFallbackData(SGS_SERIES.ipca),
+                usd: getFallbackData(SGS_SERIES.usd),
+                ibovespa: getIbovespaData()
+            };
+            
+            createIndicatorCards();
+            createMainChart();
+            createMiniCharts();
+            updateHistoryTable();
+            generateInsights();
+            updateLastUpdateTime();
+        }
+        
+        function createIndicatorCards() {
+            const grid = document.getElementById('indicatorsGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            Object.entries(indicatorsData).forEach(([key, indicator]) => {
+                if (!indicator) {
+                    console.warn(`No data available for ${key} indicator`);
+                    return;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'indicator-card';
+                
+                const currentValue = typeof indicator.current === 'number' ? formatValue(indicator.current, key) : '--';
+                const changeValue = typeof indicator.change === 'number' ? formatChange(indicator.change, key) : '--';
+                const changePercent = typeof indicator.changePercent === 'number' ? indicator.changePercent.toFixed(2) : '0.00';
+                const changeClass = typeof indicator.change === 'number' && indicator.change >= 0 ? 'positive' : 'negative';
+                
+                card.innerHTML = `
+                    <div class="indicator-header">
+                        <h3>${indicator.name || 'N/A'}</h3>
+                        <span class="indicator-unit">${indicator.unit || ''}</span>
+                    </div>
+                    <div class="indicator-value">
+                        <span class="current-value">${currentValue}</span>
+                        <span class="change ${changeClass}">
+                            ${typeof indicator.change === 'number' && indicator.change >= 0 ? '+' : ''}${changeValue}
+                            (${typeof indicator.changePercent === 'number' && indicator.changePercent >= 0 ? '+' : ''}${changePercent}%)
+                        </span>
+                    </div>
+                    <div class="indicator-chart">
+                        <canvas id="${key}MiniChart"></canvas>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        function createMainChart() {
+            try {
+                const ctx = document.getElementById('mainChart').getContext('2d');
+                
+                if (mainChart) {
+                    mainChart.destroy();
+                }
+                
+                const datasets = Object.entries(indicatorsData)
+                    .filter(([key, indicator]) => indicator && indicator.data && indicator.data.length > 0)
+                    .map(([key, indicator]) => ({
+                        label: indicator.name,
+                        data: indicator.data.map(d => d.value),
+                        borderColor: indicator.color,
+                        backgroundColor: indicator.color + '20',
+                        tension: 0.4,
+                        yAxisID: key === 'ibovespa' ? 'y1' : 'y'
+                    }));
+                
+                // Get labels from the first available dataset
+                const firstDataset = Object.values(indicatorsData).find(ind => ind && ind.data && ind.data.length > 0);
+                const labels = firstDataset ? firstDataset.data.map(d => formatDate(d.date)) : [];
+                
+                mainChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Data'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Taxas (%)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Ibovespa (pontos)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const indicator = Object.values(indicatorsData)[context.datasetIndex];
+                                    return `${indicator.name}: ${formatValue(context.parsed.y, Object.keys(indicatorsData)[context.datasetIndex])}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            } catch (error) {
+                console.error('Error creating main chart:', error);
+            }
+        }
+        
+        function createMiniCharts() {
+            try {
+                Object.entries(indicatorsData).forEach(([key, indicator]) => {
+                    const canvas = document.getElementById(`${key}MiniChart`);
+                    if (!canvas || !indicator || !indicator.data || indicator.data.length === 0) {
+                        console.warn(`No data available for ${key} mini chart`);
+                        return;
+                    }
+                    
+                    const ctx = canvas.getContext('2d');
+                    
+                    if (miniCharts[key]) {
+                        miniCharts[key].destroy();
+                    }
+                    
+                    miniCharts[key] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: indicator.data.map(d => formatDate(d.date)),
+                        datasets: [{
+                            data: indicator.data.map(d => d.value),
+                            borderColor: indicator.color,
+                            backgroundColor: indicator.color + '20',
+                            tension: 0.4,
+                            pointRadius: 0,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        },
+                        elements: {
+                            point: { radius: 0 }
+                        }
+                    }
+                });
+                });
+            } catch (error) {
+                console.error('Error creating mini charts:', error);
+            }
+        }
+        
+        function updateHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            
+            // Check if we have data
+            if (!indicatorsData || !indicatorsData.selic || !indicatorsData.selic.data) {
+                console.warn('No data available for history table');
+                return;
+            }
+            
+            const days = indicatorsData.selic.data.length;
+            const maxRows = Math.min(10, days);
+            
+            for (let i = days - 1; i >= Math.max(0, days - maxRows); i--) {
+                const row = tbody.insertRow();
+                
+                // Safely get data with fallbacks
+                const selicData = indicatorsData.selic?.data?.[i];
+                const cdiData = indicatorsData.cdi?.data?.[i];
+                const ipcaData = indicatorsData.ipca?.data?.[i];
+                const ibovespaData = indicatorsData.ibovespa?.data?.[i];
+                const usdData = indicatorsData.usd?.data?.[i];
+                
+                row.innerHTML = `
+                    <td>${selicData ? formatDate(selicData.date) : '--'}</td>
+                    <td>${selicData ? formatValue(selicData.value, 'selic') : '--'}</td>
+                    <td>${cdiData ? formatValue(cdiData.value, 'cdi') : '--'}</td>
+                    <td>${ipcaData ? formatValue(ipcaData.value, 'ipca') : '--'}</td>
+                    <td>${ibovespaData ? formatValue(ibovespaData.value, 'ibovespa') : '--'}</td>
+                    <td>${usdData ? formatValue(usdData.value, 'usd') : '--'}</td>
+                `;
+            }
+        }
+        
+        function generateInsights() {
+            // Check if we have data
+            if (!indicatorsData) {
+                console.warn('No data available for insights');
+                return;
+            }
+            
+            const selic = indicatorsData.selic;
+            const ipca = indicatorsData.ipca;
+            const ibovespa = indicatorsData.ibovespa;
+            const usd = indicatorsData.usd;
+            
+            // Market Trend Analysis
+            let marketTrend = 'Analisando dados...';
+            if (ibovespa && typeof ibovespa.change === 'number') {
+                if (ibovespa.change > 0) {
+                    marketTrend = 'O Ibovespa apresenta tendência de alta, indicando otimismo do mercado.';
+                } else {
+                    marketTrend = 'O Ibovespa apresenta tendência de baixa, indicando cautela do mercado.';
+                }
+            }
+            
+            // Investment Impact
+            let investmentImpact = 'Analisando dados...';
+            if (selic && typeof selic.current === 'number') {
+                if (selic.current > 10) {
+                    investmentImpact = 'Taxa Selic elevada favorece investimentos em renda fixa, como CDB e Tesouro Direto.';
+                } else {
+                    investmentImpact = 'Taxa Selic mais baixa pode favorecer investimentos em renda variável.';
+                }
+            }
+            
+            // Monetary Policy
+            let monetaryPolicy = 'Analisando dados...';
+            if (ipca && typeof ipca.current === 'number') {
+                if (ipca.current > 0.3) {
+                    monetaryPolicy = 'IPCA em alta pode pressionar o Banco Central a manter ou elevar a Selic.';
+                } else {
+                    monetaryPolicy = 'IPCA controlado permite flexibilidade na política monetária.';
+                }
+            }
+            
+            // International Context
+            let internationalContext = 'Analisando dados...';
+            if (usd && typeof usd.change === 'number') {
+                if (usd.change > 0) {
+                    internationalContext = 'Dólar em alta pode impactar inflação e política monetária.';
+                } else {
+                    internationalContext = 'Dólar estável contribui para controle inflacionário.';
+                }
+            }
+            
+            // Update DOM elements safely
+            const marketTrendEl = document.getElementById('marketTrend');
+            const investmentImpactEl = document.getElementById('investmentImpact');
+            const monetaryPolicyEl = document.getElementById('monetaryPolicy');
+            const internationalContextEl = document.getElementById('internationalContext');
+            
+            if (marketTrendEl) marketTrendEl.textContent = marketTrend;
+            if (investmentImpactEl) investmentImpactEl.textContent = investmentImpact;
+            if (monetaryPolicyEl) monetaryPolicyEl.textContent = monetaryPolicy;
+            if (internationalContextEl) internationalContextEl.textContent = internationalContext;
+        }
+        
+        function formatValue(value, type) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return '--';
+            }
+            
+            switch (type) {
+                case 'selic':
+                case 'cdi':
+                    return `${value.toFixed(2)}%`;
+                case 'ipca':
+                    return `${value.toFixed(2)}%`;
+                case 'ibovespa':
+                    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                case 'usd':
+                    return `R$ ${value.toFixed(4)}`;
+                default:
+                    return value.toString();
+            }
+        }
+        
+        function formatChange(change, type) {
+            if (typeof change !== 'number' || isNaN(change)) {
+                return '--';
+            }
+            
+            switch (type) {
+                case 'selic':
+                case 'cdi':
+                case 'ipca':
+                    return `${change.toFixed(2)}%`;
+                case 'ibovespa':
+                    return change.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                case 'usd':
+                    return `R$ ${change.toFixed(4)}`;
+                default:
+                    return change.toString();
+            }
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit' 
+            });
+        }
+        
+        async function changePeriod(period) {
+            currentPeriod = period;
+            console.log('Period changed to:', period);
+            
+            if (isLoading) return;
+            
+            showLoadingState();
+            try {
+                await fetchAllIndicators();
+                createIndicatorCards();
+                createMainChart();
+                createMiniCharts();
+                updateHistoryTable();
+                generateInsights();
+                updateLastUpdateTime();
+                hideLoadingState();
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                showErrorState('Erro ao atualizar dados para o período selecionado.');
+                hideLoadingState();
+            }
+        }
+        
+        async function refreshData() {
+            console.log('Refreshing data...');
+            
+            if (isLoading) return;
+            
+            showLoadingState();
+            try {
+                await fetchAllIndicators();
+                createIndicatorCards();
+                createMainChart();
+                createMiniCharts();
+                updateHistoryTable();
+                generateInsights();
+                updateLastUpdateTime();
+                hideLoadingState();
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                showErrorState('Erro ao atualizar dados. Verifique sua conexão.');
+                hideLoadingState();
+            }
+        }
+        
+        function showLoadingState() {
+            isLoading = true;
+            const grid = document.getElementById('indicatorsGrid');
+            if (grid) {
+                grid.innerHTML = `
+                    <div class="loading-card">
+                        <div class="loading-spinner"></div>
+                        <p>Carregando dados do Banco Central...</p>
+                    </div>
+                `;
+            }
+            
+            // Disable controls
+            const periodSelect = document.getElementById('periodSelect');
+            const refreshButton = document.querySelector('.refresh-button');
+            if (periodSelect) periodSelect.disabled = true;
+            if (refreshButton) refreshButton.disabled = true;
+        }
+        
+        function hideLoadingState() {
+            isLoading = false;
+            
+            // Re-enable controls
+            const periodSelect = document.getElementById('periodSelect');
+            const refreshButton = document.querySelector('.refresh-button');
+            if (periodSelect) periodSelect.disabled = false;
+            if (refreshButton) refreshButton.disabled = false;
+        }
+        
+        function showErrorState(message) {
+            const grid = document.getElementById('indicatorsGrid');
+            if (grid) {
+                grid.innerHTML = `
+                    <div class="error-card">
+                        <div class="error-icon">⚠️</div>
+                        <p>${message}</p>
+                        <button onclick="refreshData()" class="retry-button">Tentar Novamente</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR');
+            document.getElementById('lastUpdate').textContent = `Última atualização: ${timeString}`;
+        }
+        
+        function showChart(indicator) {
+            // Update button states
+            document.querySelectorAll('.chart-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter chart data based on selected indicator
+            if (mainChart && indicatorsData) {
+                const datasets = mainChart.data.datasets;
+                
+                if (indicator === 'all') {
+                    // Show all indicators
+                    datasets.forEach(dataset => {
+                        dataset.hidden = false;
+                    });
+                } else {
+                    // Show only selected indicator
+                    datasets.forEach(dataset => {
+                        dataset.hidden = dataset.label !== indicatorsData[indicator]?.name;
+                    });
+                }
+                
+                mainChart.update();
+            }
+            
+            console.log('Showing chart for:', indicator);
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Economic Indicators Dashboard: DOM loaded, initializing...');
+            
+            // Check if Chart.js is available
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js not loaded, using fallback mode');
+                showErrorState('Erro ao carregar biblioteca de gráficos. Recarregue a página.');
+                return;
+            }
+            
+            initializeDashboard();
+            console.log('Economic Indicators Dashboard: Initialized successfully!');
+        });
+    </script>
+</body>
+</html>

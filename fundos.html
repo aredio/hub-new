@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparador de Fundos e ETFs - Hub Financeiro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="fundos.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button class="back-button" onclick="window.location.href='index.html'">← Voltar ao Hub</button>
+            <h1>📊 Comparador de Fundos e ETFs</h1>
+            <p>Pesquise, compare e analise fundos de investimento com métricas profissionais</p>
+            <div class="data-source">
+                <span>📈 Dados de fundos e ETFs do mercado brasileiro</span>
+            </div>
+        </header>
+
+        <div class="comparator-container">
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="search-header">
+                    <h2>🔍 Pesquisar Fundos</h2>
+                    <p>Encontre fundos e ETFs por nome, ticker ou gestora</p>
+                </div>
+
+                <div class="search-controls">
+                    <div class="search-input-group">
+                        <input type="text" id="searchInput" placeholder="Digite o nome do fundo, ticker ou gestora..." 
+                               class="search-input" onkeyup="handleSearch()">
+                        <button class="search-button" onclick="performSearch()">
+                            🔍 Pesquisar
+                        </button>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <select id="categoryFilter" onchange="applyFilters()">
+                            <option value="">Todas as categorias</option>
+                            <option value="Ações">Ações</option>
+                            <option value="Renda Fixa">Renda Fixa</option>
+                            <option value="Multimercado">Multimercado</option>
+                            <option value="Cambial">Cambial</option>
+                            <option value="ETF">ETF</option>
+                        </select>
+                        
+                        <select id="riskFilter" onchange="applyFilters()">
+                            <option value="">Todos os riscos</option>
+                            <option value="1">Baixo Risco</option>
+                            <option value="2">Médio Risco</option>
+                            <option value="3">Alto Risco</option>
+                        </select>
+                        
+                        <select id="sortBy" onchange="applyFilters()">
+                            <option value="name">Ordenar por Nome</option>
+                            <option value="return">Ordenar por Retorno</option>
+                            <option value="sharpe">Ordenar por Sharpe</option>
+                            <option value="fee">Ordenar por Taxa</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection">
+                <div class="results-header">
+                    <h3>📋 Fundos Encontrados</h3>
+                    <div class="results-actions">
+                        <button class="action-button" onclick="clearSelection()">
+                            🗑️ Limpar Seleção
+                        </button>
+                        <button class="action-button primary" onclick="compareSelected()" id="compareButton" disabled>
+                            ⚖️ Comparar Selecionados (<span id="selectedCount">0</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="funds-grid" id="fundsGrid">
+                    <!-- Fund cards will be dynamically loaded here -->
+                </div>
+
+                <div class="pagination" id="pagination">
+                    <!-- Pagination will be dynamically generated -->
+                </div>
+            </div>
+
+            <!-- Comparison Section -->
+            <div class="comparison-section" id="comparisonSection" style="display: none;">
+                <div class="comparison-header">
+                    <h2>⚖️ Comparação de Fundos</h2>
+                    <button class="close-comparison" onclick="closeComparison()">✕</button>
+                </div>
+
+                <div class="comparison-content">
+                    <!-- Summary Cards -->
+                    <div class="comparison-summary">
+                        <div class="summary-cards" id="comparisonSummary">
+                            <!-- Summary cards will be dynamically generated -->
+                        </div>
+                    </div>
+
+                    <!-- Detailed Comparison -->
+                    <div class="detailed-comparison">
+                        <div class="comparison-tabs">
+                            <button class="tab-button active" onclick="showComparisonTab('overview')">Visão Geral</button>
+                            <button class="tab-button" onclick="showComparisonTab('performance')">Performance</button>
+                            <button class="tab-button" onclick="showComparisonTab('risk')">Risco</button>
+                            <button class="tab-button" onclick="showComparisonTab('fees')">Taxas</button>
+                            <button class="tab-button" onclick="showComparisonTab('allocation')">Alocação</button>
+                        </div>
+
+                        <div class="tab-content">
+                            <!-- Overview Tab -->
+                            <div class="tab-panel active" id="overviewTab">
+                                <div class="comparison-table">
+                                    <table id="overviewTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Métrica</th>
+                                                <!-- Fund columns will be dynamically added -->
+                                            </tr>
+                                        </thead>
+                                        <tbody id="overviewTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Performance Tab -->
+                            <div class="tab-panel" id="performanceTab">
+                                <div class="performance-charts">
+                                    <div class="chart-container">
+                                        <h4>Evolução Histórica</h4>
+                                        <canvas id="performanceChart"></canvas>
+                                    </div>
+                                    <div class="chart-container">
+                                        <h4>Retornos Anuais</h4>
+                                        <canvas id="returnsChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Risk Tab -->
+                            <div class="tab-panel" id="riskTab">
+                                <div class="risk-metrics">
+                                    <div class="risk-chart">
+                                        <h4>Análise de Risco</h4>
+                                        <canvas id="riskChart"></canvas>
+                                    </div>
+                                    <div class="risk-table">
+                                        <table id="riskTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Métrica de Risco</th>
+                                                    <!-- Fund columns will be dynamically added -->
+                                                </tr>
+                                            </thead>
+                                            <tbody id="riskTableBody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fees Tab -->
+                            <div class="tab-panel" id="feesTab">
+                                <div class="fees-comparison">
+                                    <div class="fees-chart">
+                                        <h4>Comparação de Taxas</h4>
+                                        <canvas id="feesChart"></canvas>
+                                    </div>
+                                    <div class="fees-breakdown">
+                                        <h4>Detalhamento de Custos</h4>
+                                        <div id="feesBreakdown">
+                                            <!-- Fees breakdown will be dynamically generated -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Allocation Tab -->
+                            <div class="tab-panel" id="allocationTab">
+                                <div class="allocation-comparison">
+                                    <div id="allocationCharts">
+                                        <!-- Allocation charts will be dynamically generated -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fund Detail Modal -->
+            <div class="modal" id="fundDetailModal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="modalTitle">Detalhes do Fundo</h2>
+                        <button class="close-modal" onclick="closeModal()">✕</button>
+                    </div>
+                    <div class="modal-body" id="modalBody">
+                        <!-- Fund details will be dynamically loaded -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <h3>❓ Como Usar</h3>
+                <div class="help-content">
+                    <div class="help-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Pesquise fundos</h4>
+                            <p>Use a barra de pesquisa para encontrar fundos por nome, ticker ou gestora. Aplique filtros para refinar os resultados.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Selecione para comparar</h4>
+                            <p>Clique nos fundos que deseja comparar. Você pode selecionar até 4 fundos para análise detalhada.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Analise métricas</h4>
+                            <p>Compare performance, risco, taxas e alocação através das diferentes abas de análise.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Veja detalhes</h4>
+                            <p>Clique em "Ver Detalhes" para informações completas sobre cada fundo individualmente.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funds and ETFs Comparator
+        console.log('Funds Comparator: Starting...');
+        
+        let allFunds = [];
+        let filteredFunds = [];
+        let selectedFunds = [];
+        let currentPage = 1;
+        let fundsPerPage = 12;
+        let currentComparisonTab = 'overview';
+        let performanceChart = null;
+        let returnsChart = null;
+        let riskChart = null;
+        let feesChart = null;
+        
+        // Initialize comparator
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Funds Comparator: DOM loaded, initializing...');
+            loadMockData();
+            setupEventListeners();
+            console.log('Funds Comparator: Initialized successfully!');
+        });
+        
+        function setupEventListeners() {
+            // Search input
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', debounce(handleSearch, 300));
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        function loadMockData() {
+            // Comprehensive mock fund data
+            allFunds = [
+                {
+                    id: 'ITSA4',
+                    name: 'Itaúsa S.A.',
+                    ticker: 'ITSA4',
+                    category: 'Ações',
+                    manager: 'Itaú Unibanco',
+                    risk: 2,
+                    fee: 0.5,
+                    benchmark: 'IBOV',
+                    inceptionDate: '2004-01-15',
+                    nav: 12.45,
+                    return1Y: 15.2,
+                    return3Y: 8.7,
+                    return5Y: 12.1,
+                    volatility: 18.5,
+                    sharpe: 0.65,
+                    maxDrawdown: -12.3,
+                    assets: 2500000000,
+                    allocation: {
+                        'Ações': 85,
+                        'Renda Fixa': 10,
+                        'Caixa': 5
+                    },
+                    topHoldings: ['ITUB4', 'XPML11', 'BBDC4'],
+                    historicalData: generateHistoricalData(12.45, 0.12, 0.185, 60)
+                },
+                {
+                    id: 'VALE3',
+                    name: 'Vale S.A.',
+                    ticker: 'VALE3',
+                    category: 'Ações',
+                    manager: 'Vale S.A.',
+                    risk: 3,
+                    fee: 0.0,
+                    benchmark: 'IBOV',
+                    inceptionDate: '1997-05-20',
+                    nav: 58.90,
+                    return1Y: -8.5,
+                    return3Y: 5.2,
+                    return5Y: 18.7,
+                    volatility: 35.2,
+                    sharpe: 0.42,
+                    maxDrawdown: -28.9,
+                    assets: 15000000000,
+                    allocation: {
+                        'Ações': 95,
+                        'Caixa': 5
+                    },
+                    topHoldings: ['VALE3'],
+                    historicalData: generateHistoricalData(58.90, 0.15, 0.352, 60)
+                },
+                {
+                    id: 'BOVA11',
+                    name: 'iShares Ibovespa Fundo de Índice',
+                    ticker: 'BOVA11',
+                    category: 'ETF',
+                    manager: 'BlackRock',
+                    risk: 2,
+                    fee: 0.3,
+                    benchmark: 'IBOV',
+                    inceptionDate: '2008-11-10',
+                    nav: 98.75,
+                    return1Y: 12.8,
+                    return3Y: 7.4,
+                    return5Y: 9.8,
+                    volatility: 22.1,
+                    sharpe: 0.58,
+                    maxDrawdown: -18.7,
+                    assets: 8500000000,
+                    allocation: {
+                        'Ações': 100
+                    },
+                    topHoldings: ['VALE3', 'PETR4', 'ITUB4', 'BBDC4', 'ABEV3'],
+                    historicalData: generateHistoricalData(98.75, 0.10, 0.221, 60)
+                },
+                {
+                    id: 'HGLG11',
+                    name: 'CSHG Logística FII',
+                    ticker: 'HGLG11',
+                    category: 'FII',
+                    manager: 'Credit Suisse',
+                    risk: 2,
+                    fee: 0.8,
+                    benchmark: 'IFIX',
+                    inceptionDate: '2010-03-15',
+                    nav: 145.20,
+                    return1Y: 8.9,
+                    return3Y: 11.2,
+                    return5Y: 13.5,
+                    volatility: 12.8,
+                    sharpe: 0.89,
+                    maxDrawdown: -8.2,
+                    assets: 3200000000,
+                    allocation: {
+                        'Imóveis': 90,
+                        'Caixa': 10
+                    },
+                    topHoldings: ['HGLG11'],
+                    historicalData: generateHistoricalData(145.20, 0.12, 0.128, 60)
+                },
+                {
+                    id: 'TRXF11',
+                    name: 'TRX Real Estate FII',
+                    ticker: 'TRXF11',
+                    category: 'FII',
+                    manager: 'TRX Capital',
+                    risk: 2,
+                    fee: 0.7,
+                    benchmark: 'IFIX',
+                    inceptionDate: '2012-08-22',
+                    nav: 98.45,
+                    return1Y: 6.7,
+                    return3Y: 9.8,
+                    return5Y: 11.2,
+                    volatility: 15.2,
+                    sharpe: 0.72,
+                    maxDrawdown: -11.5,
+                    assets: 1800000000,
+                    allocation: {
+                        'Imóveis': 85,
+                        'Caixa': 15
+                    },
+                    topHoldings: ['TRXF11'],
+                    historicalData: generateHistoricalData(98.45, 0.10, 0.152, 60)
+                },
+                {
+                    id: 'PETR4',
+                    name: 'Petróleo Brasileiro S.A.',
+                    ticker: 'PETR4',
+                    category: 'Ações',
+                    manager: 'Petrobras',
+                    risk: 3,
+                    fee: 0.0,
+                    benchmark: 'IBOV',
+                    inceptionDate: '2000-08-08',
+                    nav: 32.15,
+                    return1Y: 25.4,
+                    return3Y: 18.9,
+                    return5Y: 22.3,
+                    volatility: 42.8,
+                    sharpe: 0.38,
+                    maxDrawdown: -35.2,
+                    assets: 22000000000,
+                    allocation: {
+                        'Ações': 98,
+                        'Caixa': 2
+                    },
+                    topHoldings: ['PETR4'],
+                    historicalData: generateHistoricalData(32.15, 0.20, 0.428, 60)
+                },
+                {
+                    id: 'SMAL11',
+                    name: 'iShares Small Cap Fundo de Índice',
+                    ticker: 'SMAL11',
+                    category: 'ETF',
+                    manager: 'BlackRock',
+                    risk: 3,
+                    fee: 0.4,
+                    benchmark: 'SMLL',
+                    inceptionDate: '2010-05-12',
+                    nav: 67.80,
+                    return1Y: 18.5,
+                    return3Y: 12.3,
+                    return5Y: 15.7,
+                    volatility: 28.9,
+                    sharpe: 0.52,
+                    maxDrawdown: -22.1,
+                    assets: 1200000000,
+                    allocation: {
+                        'Ações': 100
+                    },
+                    topHoldings: ['MULT3', 'RENT3', 'WEGE3', 'RAIL3', 'SUZB3'],
+                    historicalData: generateHistoricalData(67.80, 0.15, 0.289, 60)
+                },
+                {
+                    id: 'BTLG11',
+                    name: 'BTG Pactual Logística FII',
+                    ticker: 'BTLG11',
+                    category: 'FII',
+                    manager: 'BTG Pactual',
+                    risk: 2,
+                    fee: 0.6,
+                    benchmark: 'IFIX',
+                    inceptionDate: '2014-11-18',
+                    nav: 112.30,
+                    return1Y: 10.2,
+                    return3Y: 13.1,
+                    return5Y: 14.8,
+                    volatility: 11.5,
+                    sharpe: 0.95,
+                    maxDrawdown: -7.8,
+                    assets: 2800000000,
+                    allocation: {
+                        'Imóveis': 88,
+                        'Caixa': 12
+                    },
+                    topHoldings: ['BTLG11'],
+                    historicalData: generateHistoricalData(112.30, 0.13, 0.115, 60)
+                }
+            ];
+            
+            filteredFunds = [...allFunds];
+            displayFunds();
+        }
+        
+        function generateHistoricalData(initialPrice, annualReturn, volatility, months) {
+            const data = [];
+            let currentPrice = initialPrice;
+            const monthlyReturn = annualReturn / 12;
+            const monthlyVolatility = volatility / Math.sqrt(12);
+            
+            for (let i = 0; i < months; i++) {
+                const randomReturn = (Math.random() - 0.5) * 2 * monthlyVolatility + monthlyReturn;
+                currentPrice = currentPrice * (1 + randomReturn);
+                data.push({
+                    date: new Date(Date.now() - (months - i - 1) * 30 * 24 * 60 * 60 * 1000),
+                    price: Math.max(currentPrice, 0.01)
+                });
+            }
+            
+            return data;
+        }
+        
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            applyFilters();
+        }
+        
+        function performSearch() {
+            applyFilters();
+        }
+        
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const risk = document.getElementById('riskFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            filteredFunds = allFunds.filter(fund => {
+                const matchesQuery = !query || 
+                    fund.name.toLowerCase().includes(query) ||
+                    fund.ticker.toLowerCase().includes(query) ||
+                    fund.manager.toLowerCase().includes(query);
+                
+                const matchesCategory = !category || fund.category === category;
+                const matchesRisk = !risk || fund.risk.toString() === risk;
+                
+                return matchesQuery && matchesCategory && matchesRisk;
+            });
+            
+            // Sort results
+            filteredFunds.sort((a, b) => {
+                switch (sortBy) {
+                    case 'return':
+                        return b.return1Y - a.return1Y;
+                    case 'sharpe':
+                        return b.sharpe - a.sharpe;
+                    case 'fee':
+                        return a.fee - b.fee;
+                    default:
+                        return a.name.localeCompare(b.name);
+                }
+            });
+            
+            currentPage = 1;
+            displayFunds();
+        }
+        
+        function displayFunds() {
+            const grid = document.getElementById('fundsGrid');
+            const startIndex = (currentPage - 1) * fundsPerPage;
+            const endIndex = startIndex + fundsPerPage;
+            const pageFunds = filteredFunds.slice(startIndex, endIndex);
+            
+            grid.innerHTML = '';
+            
+            pageFunds.forEach(fund => {
+                const fundCard = createFundCard(fund);
+                grid.appendChild(fundCard);
+            });
+            
+            updatePagination();
+            updateSelectedCount();
+        }
+        
+        function createFundCard(fund) {
+            const card = document.createElement('div');
+            card.className = `fund-card ${selectedFunds.includes(fund.id) ? 'selected' : ''}`;
+            card.onclick = () => toggleFundSelection(fund.id);
+            
+            const riskColor = fund.risk === 1 ? '#27ae60' : fund.risk === 2 ? '#f39c12' : '#e74c3c';
+            const riskText = fund.risk === 1 ? 'Baixo' : fund.risk === 2 ? 'Médio' : 'Alto';
+            
+            card.innerHTML = `
+                <div class="fund-header">
+                    <div class="fund-ticker">${fund.ticker}</div>
+                    <div class="fund-category">${fund.category}</div>
+                </div>
+                <div class="fund-name">${fund.name}</div>
+                <div class="fund-manager">${fund.manager}</div>
+                <div class="fund-metrics">
+                    <div class="metric">
+                        <span class="metric-label">Retorno 1A:</span>
+                        <span class="metric-value ${fund.return1Y >= 0 ? 'positive' : 'negative'}">
+                            ${fund.return1Y >= 0 ? '+' : ''}${fund.return1Y.toFixed(1)}%
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Sharpe:</span>
+                        <span class="metric-value">${fund.sharpe.toFixed(2)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Taxa:</span>
+                        <span class="metric-value">${fund.fee.toFixed(2)}%</span>
+                    </div>
+                </div>
+                <div class="fund-footer">
+                    <div class="risk-indicator" style="background-color: ${riskColor}">
+                        Risco ${riskText}
+                    </div>
+                    <div class="fund-actions">
+                        <button class="action-btn details" onclick="event.stopPropagation(); showFundDetails('${fund.id}')">
+                            📊 Detalhes
+                        </button>
+                        <button class="action-btn select" onclick="event.stopPropagation(); toggleFundSelection('${fund.id}')">
+                            ${selectedFunds.includes(fund.id) ? '✅ Selecionado' : '➕ Selecionar'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function toggleFundSelection(fundId) {
+            if (selectedFunds.includes(fundId)) {
+                selectedFunds = selectedFunds.filter(id => id !== fundId);
+            } else if (selectedFunds.length < 4) {
+                selectedFunds.push(fundId);
+            } else {
+                alert('Você pode selecionar no máximo 4 fundos para comparação.');
+                return;
+            }
+            
+            displayFunds();
+            updateSelectedCount();
+        }
+        
+        function updateSelectedCount() {
+            const count = selectedFunds.length;
+            const button = document.getElementById('compareButton');
+            const countSpan = document.getElementById('selectedCount');
+            
+            countSpan.textContent = count;
+            button.disabled = count < 2;
+        }
+        
+        function clearSelection() {
+            selectedFunds = [];
+            displayFunds();
+            updateSelectedCount();
+        }
+        
+        function compareSelected() {
+            if (selectedFunds.length < 2) {
+                alert('Selecione pelo menos 2 fundos para comparar.');
+                return;
+            }
+            
+            const selectedFundsData = selectedFunds.map(id => allFunds.find(fund => fund.id === id));
+            showComparison(selectedFundsData);
+        }
+        
+        function showComparison(funds) {
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('comparisonSection').style.display = 'block';
+            
+            updateComparisonSummary(funds);
+            updateOverviewTable(funds);
+            createPerformanceCharts(funds);
+            updateRiskTable(funds);
+            createFeesChart(funds);
+            createAllocationCharts(funds);
+        }
+        
+        function updateComparisonSummary(funds) {
+            const summary = document.getElementById('comparisonSummary');
+            summary.innerHTML = '';
+            
+            funds.forEach(fund => {
+                const card = document.createElement('div');
+                card.className = 'summary-card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h4>${fund.ticker}</h4>
+                        <span class="category">${fund.category}</span>
+                    </div>
+                    <div class="card-metrics">
+                        <div class="metric">
+                            <span class="label">Retorno 1A:</span>
+                            <span class="value ${fund.return1Y >= 0 ? 'positive' : 'negative'}">
+                                ${fund.return1Y >= 0 ? '+' : ''}${fund.return1Y.toFixed(1)}%
+                            </span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Sharpe:</span>
+                            <span class="value">${fund.sharpe.toFixed(2)}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Volatilidade:</span>
+                            <span class="value">${fund.volatility.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+                summary.appendChild(card);
+            });
+        }
+        
+        function updateOverviewTable(funds) {
+            const tbody = document.getElementById('overviewTableBody');
+            tbody.innerHTML = '';
+            
+            const metrics = [
+                { label: 'Nome', key: 'name' },
+                { label: 'Gestora', key: 'manager' },
+                { label: 'Benchmark', key: 'benchmark' },
+                { label: 'Data de Início', key: 'inceptionDate' },
+                { label: 'Patrimônio', key: 'assets', format: 'currency' },
+                { label: 'Retorno 1 Ano', key: 'return1Y', format: 'percentage' },
+                { label: 'Retorno 3 Anos', key: 'return3Y', format: 'percentage' },
+                { label: 'Retorno 5 Anos', key: 'return5Y', format: 'percentage' },
+                { label: 'Taxa de Administração', key: 'fee', format: 'percentage' },
+                { label: 'Volatilidade', key: 'volatility', format: 'percentage' },
+                { label: 'Índice Sharpe', key: 'sharpe', format: 'decimal' },
+                { label: 'Máximo Drawdown', key: 'maxDrawdown', format: 'percentage' }
+            ];
+            
+            metrics.forEach(metric => {
+                const row = tbody.insertRow();
+                const labelCell = row.insertCell();
+                labelCell.textContent = metric.label;
+                
+                funds.forEach(fund => {
+                    const cell = row.insertCell();
+                    let value = fund[metric.key];
+                    
+                    switch (metric.format) {
+                        case 'currency':
+                            value = `R$ ${(value / 1000000).toFixed(1)}M`;
+                            break;
+                        case 'percentage':
+                            value = `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+                            break;
+                        case 'decimal':
+                            value = value.toFixed(2);
+                            break;
+                    }
+                    
+                    cell.textContent = value;
+                    if (metric.key.includes('return') && value.includes('+')) {
+                        cell.className = 'positive';
+                    } else if (metric.key.includes('return') && value.includes('-')) {
+                        cell.className = 'negative';
+                    }
+                });
+            });
+        }
+        
+        function createPerformanceCharts(funds) {
+            // Performance Chart
+            const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+            if (performanceChart) performanceChart.destroy();
+            
+            const datasets = funds.map((fund, index) => ({
+                label: fund.ticker,
+                data: fund.historicalData.map(d => d.price),
+                borderColor: `hsl(${index * 60}, 70%, 50%)`,
+                backgroundColor: `hsla(${index * 60}, 70%, 50%, 0.1)`,
+                borderWidth: 2,
+                fill: false
+            }));
+            
+            performanceChart = new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: funds[0].historicalData.map(d => d.date.toLocaleDateString('pt-BR')),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': R$ ' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Returns Chart
+            const returnsCtx = document.getElementById('returnsChart').getContext('2d');
+            if (returnsChart) returnsChart.destroy();
+            
+            returnsChart = new Chart(returnsCtx, {
+                type: 'bar',
+                data: {
+                    labels: funds.map(f => f.ticker),
+                    datasets: [
+                        {
+                            label: 'Retorno 1 Ano',
+                            data: funds.map(f => f.return1Y),
+                            backgroundColor: funds.map((_, i) => `hsla(${i * 60}, 70%, 50%, 0.7)`),
+                            borderColor: funds.map((_, i) => `hsl(${i * 60}, 70%, 50%)`),
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Retorno 1 Ano: ' + context.parsed.y.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateRiskTable(funds) {
+            const tbody = document.getElementById('riskTableBody');
+            tbody.innerHTML = '';
+            
+            const riskMetrics = [
+                { label: 'Volatilidade', key: 'volatility', format: 'percentage' },
+                { label: 'Índice Sharpe', key: 'sharpe', format: 'decimal' },
+                { label: 'Máximo Drawdown', key: 'maxDrawdown', format: 'percentage' },
+                { label: 'Classificação de Risco', key: 'risk', format: 'risk' }
+            ];
+            
+            riskMetrics.forEach(metric => {
+                const row = tbody.insertRow();
+                const labelCell = row.insertCell();
+                labelCell.textContent = metric.label;
+                
+                funds.forEach(fund => {
+                    const cell = row.insertCell();
+                    let value = fund[metric.key];
+                    
+                    switch (metric.format) {
+                        case 'percentage':
+                            value = `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+                            break;
+                        case 'decimal':
+                            value = value.toFixed(2);
+                            break;
+                        case 'risk':
+                            const riskText = value === 1 ? 'Baixo' : value === 2 ? 'Médio' : 'Alto';
+                            const riskColor = value === 1 ? '#27ae60' : value === 2 ? '#f39c12' : '#e74c3c';
+                            value = `<span style="color: ${riskColor}; font-weight: bold;">${riskText}</span>`;
+                            break;
+                    }
+                    
+                    cell.innerHTML = value;
+                });
+            });
+        }
+        
+        function createFeesChart(funds) {
+            const feesCtx = document.getElementById('feesChart').getContext('2d');
+            if (feesChart) feesChart.destroy();
+            
+            feesChart = new Chart(feesCtx, {
+                type: 'bar',
+                data: {
+                    labels: funds.map(f => f.ticker),
+                    datasets: [
+                        {
+                            label: 'Taxa de Administração (%)',
+                            data: funds.map(f => f.fee),
+                            backgroundColor: funds.map((_, i) => `hsla(${i * 60}, 70%, 50%, 0.7)`),
+                            borderColor: funds.map((_, i) => `hsl(${i * 60}, 70%, 50%)`),
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Taxa: ' + context.parsed.y.toFixed(2) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createAllocationCharts(funds) {
+            const container = document.getElementById('allocationCharts');
+            container.innerHTML = '';
+            
+            funds.forEach(fund => {
+                const chartContainer = document.createElement('div');
+                chartContainer.className = 'allocation-chart-container';
+                chartContainer.innerHTML = `
+                    <h4>${fund.ticker} - Alocação</h4>
+                    <canvas id="allocationChart_${fund.id}"></canvas>
+                `;
+                container.appendChild(chartContainer);
+                
+                const ctx = document.getElementById(`allocationChart_${fund.id}`).getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(fund.allocation),
+                        datasets: [{
+                            data: Object.values(fund.allocation),
+                            backgroundColor: [
+                                '#3498db',
+                                '#2ecc71',
+                                '#f39c12',
+                                '#e74c3c',
+                                '#9b59b6',
+                                '#1abc9c'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        }
+        
+        function showComparisonTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="showComparisonTab('${tabName}')"]`).classList.add('active');
+            
+            // Update tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            
+            currentComparisonTab = tabName;
+        }
+        
+        function closeComparison() {
+            document.getElementById('comparisonSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+        
+        function showFundDetails(fundId) {
+            const fund = allFunds.find(f => f.id === fundId);
+            if (!fund) return;
+            
+            document.getElementById('modalTitle').textContent = `${fund.ticker} - ${fund.name}`;
+            
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div class="fund-details">
+                    <div class="details-section">
+                        <h3>Informações Gerais</h3>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <span class="label">Gestora:</span>
+                                <span class="value">${fund.manager}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Categoria:</span>
+                                <span class="value">${fund.category}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Benchmark:</span>
+                                <span class="value">${fund.benchmark}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Data de Início:</span>
+                                <span class="value">${new Date(fund.inceptionDate).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Patrimônio:</span>
+                                <span class="value">R$ ${(fund.assets / 1000000).toFixed(1)}M</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="details-section">
+                        <h3>Performance</h3>
+                        <div class="performance-grid">
+                            <div class="performance-item">
+                                <span class="label">Retorno 1 Ano:</span>
+                                <span class="value ${fund.return1Y >= 0 ? 'positive' : 'negative'}">
+                                    ${fund.return1Y >= 0 ? '+' : ''}${fund.return1Y.toFixed(1)}%
+                                </span>
+                            </div>
+                            <div class="performance-item">
+                                <span class="label">Retorno 3 Anos:</span>
+                                <span class="value ${fund.return3Y >= 0 ? 'positive' : 'negative'}">
+                                    ${fund.return3Y >= 0 ? '+' : ''}${fund.return3Y.toFixed(1)}%
+                                </span>
+                            </div>
+                            <div class="performance-item">
+                                <span class="label">Retorno 5 Anos:</span>
+                                <span class="value ${fund.return5Y >= 0 ? 'positive' : 'negative'}">
+                                    ${fund.return5Y >= 0 ? '+' : ''}${fund.return5Y.toFixed(1)}%
+                                </span>
+                            </div>
+                            <div class="performance-item">
+                                <span class="label">Volatilidade:</span>
+                                <span class="value">${fund.volatility.toFixed(1)}%</span>
+                            </div>
+                            <div class="performance-item">
+                                <span class="label">Índice Sharpe:</span>
+                                <span class="value">${fund.sharpe.toFixed(2)}</span>
+                            </div>
+                            <div class="performance-item">
+                                <span class="label">Máximo Drawdown:</span>
+                                <span class="value negative">${fund.maxDrawdown.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="details-section">
+                        <h3>Principais Posições</h3>
+                        <div class="holdings-list">
+                            ${fund.topHoldings.map(holding => `
+                                <div class="holding-item">${holding}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('fundDetailModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('fundDetailModal').style.display = 'none';
+        }
+        
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredFunds.length / fundsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // Previous button
+            if (currentPage > 1) {
+                paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage - 1})">‹ Anterior</button>`;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    paginationHTML += `<button class="page-btn active">${i}</button>`;
+                } else {
+                    paginationHTML += `<button class="page-btn" onclick="changePage(${i})">${i}</button>`;
+                }
+            }
+            
+            // Next button
+            if (currentPage < totalPages) {
+                paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage + 1})">Próximo ›</button>`;
+            }
+            
+            pagination.innerHTML = paginationHTML;
+        }
+        
+        function changePage(page) {
+            currentPage = page;
+            displayFunds();
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('fundDetailModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
+

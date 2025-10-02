@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Educação Financeira (CPA-20) - Hub Financeiro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="quiz.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button class="back-button" onclick="window.location.href='index.html'">← Voltar ao Hub</button>
+            <h1>🎓 Quiz de Educação Financeira (CPA-20)</h1>
+            <p>Teste seus conhecimentos em educação financeira e conquiste badges!</p>
+            <div class="data-source">
+                <span>📚 Baseado no conteúdo do CPA-20 (Certificação Profissional ANBIMA)</span>
+            </div>
+        </header>
+
+        <div class="quiz-container">
+            <!-- Home Screen -->
+            <div class="quiz-home" id="quizHome">
+                <div class="home-content">
+                    <div class="welcome-section">
+                        <div class="welcome-icon">🎯</div>
+                        <h2>Bem-vindo ao Quiz CPA-20!</h2>
+                        <p>Teste seus conhecimentos em educação financeira e suba de nível</p>
+                    </div>
+
+                    <div class="user-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">🏆</div>
+                            <div class="stat-content">
+                                <h3>Nível Atual</h3>
+                                <span class="stat-value" id="currentLevel">1</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⭐</div>
+                            <div class="stat-content">
+                                <h3>Pontos</h3>
+                                <span class="stat-value" id="totalPoints">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🎖️</div>
+                            <div class="stat-content">
+                                <h3>Badges</h3>
+                                <span class="stat-value" id="totalBadges">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-content">
+                                <h3>Acertos</h3>
+                                <span class="stat-value" id="accuracy">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quiz-options">
+                        <div class="option-card" onclick="startQuiz('beginner')">
+                            <div class="option-icon">🌱</div>
+                            <h3>Iniciante</h3>
+                            <p>10 perguntas básicas</p>
+                            <div class="option-details">
+                                <span class="difficulty">Fácil</span>
+                                <span class="points">+10 pts por acerto</span>
+                            </div>
+                        </div>
+                        <div class="option-card" onclick="startQuiz('intermediate')">
+                            <div class="option-icon">🌿</div>
+                            <h3>Intermediário</h3>
+                            <p>15 perguntas moderadas</p>
+                            <div class="option-details">
+                                <span class="difficulty">Médio</span>
+                                <span class="points">+15 pts por acerto</span>
+                            </div>
+                        </div>
+                        <div class="option-card" onclick="startQuiz('advanced')">
+                            <div class="option-icon">🌳</div>
+                            <h3>Avançado</h3>
+                            <p>20 perguntas desafiadoras</p>
+                            <div class="option-details">
+                                <span class="difficulty">Difícil</span>
+                                <span class="points">+20 pts por acerto</span>
+                            </div>
+                        </div>
+                        <div class="option-card" onclick="startQuiz('cpa20')">
+                            <div class="option-icon">🎓</div>
+                            <h3>CPA-20 Completo</h3>
+                            <p>50 perguntas oficiais</p>
+                            <div class="option-details">
+                                <span class="difficulty">Expert</span>
+                                <span class="points">+25 pts por acerto</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="home-actions">
+                        <button class="action-button" onclick="showLeaderboard()">
+                            🏆 Ranking
+                        </button>
+                        <button class="action-button" onclick="showProfile()">
+                            👤 Perfil
+                        </button>
+                        <button class="action-button" onclick="showBadges()">
+                            🎖️ Badges
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div class="quiz-screen" id="quizScreen" style="display: none;">
+                <div class="quiz-header">
+                    <div class="quiz-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-text" id="progressText">1 / 10</span>
+                    </div>
+                    <div class="quiz-timer">
+                        <div class="timer-circle">
+                            <svg class="timer-svg" viewBox="0 0 100 100">
+                                <circle class="timer-bg" cx="50" cy="50" r="45"></circle>
+                                <circle class="timer-progress" cx="50" cy="50" r="45" id="timerProgress"></circle>
+                            </svg>
+                            <span class="timer-text" id="timerText">30</span>
+                        </div>
+                    </div>
+                    <div class="quiz-points">
+                        <span class="points-label">Pontos:</span>
+                        <span class="points-value" id="currentPoints">0</span>
+                    </div>
+                </div>
+
+                <div class="question-container">
+                    <div class="question-header">
+                        <div class="question-topic" id="questionTopic">Renda Fixa</div>
+                        <div class="question-difficulty" id="questionDifficulty">Fácil</div>
+                    </div>
+                    <div class="question-text" id="questionText">
+                        Qual é a principal característica dos títulos de renda fixa?
+                    </div>
+                    <div class="question-choices" id="questionChoices">
+                        <!-- Choices will be dynamically loaded -->
+                    </div>
+                </div>
+
+                <div class="quiz-actions">
+                    <button class="action-button secondary" onclick="skipQuestion()">
+                        ⏭️ Pular
+                    </button>
+                    <button class="action-button" onclick="submitAnswer()" id="submitButton" disabled>
+                        ✅ Responder
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div class="results-screen" id="resultsScreen" style="display: none;">
+                <div class="results-content">
+                    <div class="results-header">
+                        <div class="results-icon" id="resultsIcon">🎉</div>
+                        <h2 id="resultsTitle">Parabéns!</h2>
+                        <p id="resultsSubtitle">Você completou o quiz!</p>
+                    </div>
+
+                    <div class="results-stats">
+                        <div class="result-stat">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <h3>Pontuação</h3>
+                                <span class="stat-value" id="finalScore">0</span>
+                            </div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-info">
+                                <h3>Acertos</h3>
+                                <span class="stat-value" id="correctAnswers">0</span>
+                            </div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="stat-icon">⏱️</div>
+                            <div class="stat-info">
+                                <h3>Tempo Médio</h3>
+                                <span class="stat-value" id="averageTime">0s</span>
+                            </div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="stat-icon">🎖️</div>
+                            <div class="stat-info">
+                                <h3>Novos Badges</h3>
+                                <span class="stat-value" id="newBadges">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-breakdown">
+                        <h3>Análise por Tópico</h3>
+                        <div class="topic-breakdown" id="topicBreakdown">
+                            <!-- Topic breakdown will be dynamically loaded -->
+                        </div>
+                    </div>
+
+                    <div class="results-actions">
+                        <button class="action-button" onclick="retryQuiz()">
+                            🔄 Tentar Novamente
+                        </button>
+                        <button class="action-button secondary" onclick="backToHome()">
+                            🏠 Voltar ao Início
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Screen -->
+            <div class="leaderboard-screen" id="leaderboardScreen" style="display: none;">
+                <div class="leaderboard-content">
+                    <div class="leaderboard-header">
+                        <h2>🏆 Ranking Global</h2>
+                        <button class="close-button" onclick="backToHome()">✕</button>
+                    </div>
+
+                    <div class="leaderboard-tabs">
+                        <button class="tab-button active" onclick="showLeaderboardTab('global')">Global</button>
+                        <button class="tab-button" onclick="showLeaderboardTab('monthly')">Mensal</button>
+                        <button class="tab-button" onclick="showLeaderboardTab('weekly')">Semanal</button>
+                    </div>
+
+                    <div class="leaderboard-list" id="leaderboardList">
+                        <!-- Leaderboard entries will be dynamically loaded -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Screen -->
+            <div class="profile-screen" id="profileScreen" style="display: none;">
+                <div class="profile-content">
+                    <div class="profile-header">
+                        <h2>👤 Meu Perfil</h2>
+                        <button class="close-button" onclick="backToHome()">✕</button>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <h3>Estatísticas Gerais</h3>
+                            <div class="stat-grid">
+                                <div class="stat-item">
+                                    <span class="label">Quizzes Completos:</span>
+                                    <span class="value" id="quizzesCompleted">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="label">Total de Pontos:</span>
+                                    <span class="value" id="totalPointsProfile">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="label">Nível Atual:</span>
+                                    <span class="value" id="currentLevelProfile">1</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="label">Taxa de Acerto:</span>
+                                    <span class="value" id="accuracyProfile">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-stat">
+                            <h3>Progresso por Tópico</h3>
+                            <div class="topic-progress" id="topicProgress">
+                                <!-- Topic progress will be dynamically loaded -->
+                            </div>
+                        </div>
+
+                        <div class="profile-stat">
+                            <h3>Histórico de Performance</h3>
+                            <div class="performance-chart">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Badges Screen -->
+            <div class="badges-screen" id="badgesScreen" style="display: none;">
+                <div class="badges-content">
+                    <div class="badges-header">
+                        <h2>🎖️ Meus Badges</h2>
+                        <button class="close-button" onclick="backToHome()">✕</button>
+                    </div>
+
+                    <div class="badges-grid" id="badgesGrid">
+                        <!-- Badges will be dynamically loaded -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gamified Financial Education Quiz (CPA-20)
+        console.log('CPA-20 Quiz: Starting...');
+        
+        let currentQuiz = null;
+        let currentQuestion = 0;
+        let selectedAnswer = null;
+        let quizTimer = null;
+        let timeRemaining = 30;
+        let userStats = {
+            level: 1,
+            points: 0,
+            badges: [],
+            accuracy: 0,
+            quizzesCompleted: 0,
+            totalQuestions: 0,
+            correctAnswers: 0,
+            topicProgress: {},
+            performanceHistory: []
+        };
+        
+        // Badge definitions
+        const BADGES = {
+            first_quiz: { name: 'Primeiro Quiz', description: 'Complete seu primeiro quiz', icon: '🎯', points: 50 },
+            perfect_score: { name: 'Pontuação Perfeita', description: 'Acertou todas as questões', icon: '💯', points: 100 },
+            speed_demon: { name: 'Velocidade', description: 'Respondeu em menos de 10s', icon: '⚡', points: 75 },
+            scholar: { name: 'Estudioso', description: 'Completou 10 quizzes', icon: '📚', points: 150 },
+            expert: { name: 'Especialista', description: 'Nível 10 alcançado', icon: '🎓', points: 200 },
+            streak_master: { name: 'Sequência', description: '5 acertos consecutivos', icon: '🔥', points: 100 },
+            topic_master: { name: 'Mestre do Tópico', description: '100% em um tópico', icon: '🏆', points: 125 }
+        };
+        
+        // Question database
+        const QUESTIONS = {
+            beginner: [
+                {
+                    topic: 'Renda Fixa',
+                    difficulty: 'Fácil',
+                    question: 'Qual é a principal característica dos títulos de renda fixa?',
+                    choices: [
+                        'Rendimento variável',
+                        'Rendimento predefinido',
+                        'Alto risco',
+                        'Liquidez imediata'
+                    ],
+                    correct: 1,
+                    explanation: 'Os títulos de renda fixa têm rendimento predefinido no momento da aplicação.'
+                },
+                {
+                    topic: 'Renda Variável',
+                    difficulty: 'Fácil',
+                    question: 'O que são ações?',
+                    choices: [
+                        'Títulos de dívida',
+                        'Partes do capital de uma empresa',
+                        'Moedas estrangeiras',
+                        'Commodities'
+                    ],
+                    correct: 1,
+                    explanation: 'Ações representam partes do capital social de uma empresa.'
+                },
+                {
+                    topic: 'Fundos',
+                    difficulty: 'Fácil',
+                    question: 'O que é um fundo de investimento?',
+                    choices: [
+                        'Uma empresa individual',
+                        'Um condomínio de investidores',
+                        'Um banco',
+                        'Uma corretora'
+                    ],
+                    correct: 1,
+                    explanation: 'Um fundo é um condomínio onde vários investidores aplicam recursos.'
+                }
+            ],
+            intermediate: [
+                {
+                    topic: 'Renda Fixa',
+                    difficulty: 'Médio',
+                    question: 'Qual a diferença entre CDB e LCI?',
+                    choices: [
+                        'CDB tem isenção de IR',
+                        'LCI tem isenção de IR',
+                        'Não há diferença',
+                        'CDB é mais arriscado'
+                    ],
+                    correct: 1,
+                    explanation: 'LCI (Letra de Crédito Imobiliário) tem isenção de IR para pessoa física.'
+                },
+                {
+                    topic: 'Renda Variável',
+                    difficulty: 'Médio',
+                    question: 'O que é dividend yield?',
+                    choices: [
+                        'Valor da ação',
+                        'Rendimento por dividendos',
+                        'Volume de negociação',
+                        'Capitalização de mercado'
+                    ],
+                    correct: 1,
+                    explanation: 'Dividend yield é o rendimento proporcionado pelos dividendos em relação ao preço da ação.'
+                }
+            ],
+            advanced: [
+                {
+                    topic: 'Derivativos',
+                    difficulty: 'Difícil',
+                    question: 'O que é um contrato futuro?',
+                    choices: [
+                        'Compra à vista',
+                        'Compromisso de compra/venda futura',
+                        'Empréstimo',
+                        'Investimento em ações'
+                    ],
+                    correct: 1,
+                    explanation: 'Contrato futuro é um compromisso de compra ou venda de um ativo em data futura.'
+                }
+            ],
+            cpa20: [
+                {
+                    topic: 'Regulamentação',
+                    difficulty: 'Expert',
+                    question: 'Qual órgão regula o mercado de capitais no Brasil?',
+                    choices: [
+                        'BACEN',
+                        'CVM',
+                        'ANBIMA',
+                        'B3'
+                    ],
+                    correct: 1,
+                    explanation: 'A CVM (Comissão de Valores Mobiliários) é o órgão regulador do mercado de capitais.'
+                }
+            ]
+        };
+        
+        // Initialize quiz
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('CPA-20 Quiz: DOM loaded, initializing...');
+            loadUserStats();
+            updateHomeStats();
+            console.log('CPA-20 Quiz: Initialized successfully!');
+        });
+        
+        function loadUserStats() {
+            const saved = localStorage.getItem('quizUserStats');
+            if (saved) {
+                userStats = { ...userStats, ...JSON.parse(saved) };
+            }
+        }
+        
+        function saveUserStats() {
+            localStorage.setItem('quizUserStats', JSON.stringify(userStats));
+        }
+        
+        function updateHomeStats() {
+            document.getElementById('currentLevel').textContent = userStats.level;
+            document.getElementById('totalPoints').textContent = userStats.points;
+            document.getElementById('totalBadges').textContent = userStats.badges.length;
+            document.getElementById('accuracy').textContent = userStats.accuracy.toFixed(1) + '%';
+        }
+        
+        function startQuiz(difficulty) {
+            currentQuiz = {
+                difficulty: difficulty,
+                questions: [...QUESTIONS[difficulty]],
+                currentQuestion: 0,
+                score: 0,
+                correctAnswers: 0,
+                startTime: Date.now(),
+                answers: []
+            };
+            
+            // Shuffle questions
+            currentQuiz.questions = shuffleArray(currentQuiz.questions);
+            
+            document.getElementById('quizHome').style.display = 'none';
+            document.getElementById('quizScreen').style.display = 'block';
+            
+            showQuestion();
+        }
+        
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+        
+        function showQuestion() {
+            const question = currentQuiz.questions[currentQuestion];
+            selectedAnswer = null;
+            
+            // Update progress
+            const progress = ((currentQuestion + 1) / currentQuiz.questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${currentQuestion + 1} / ${currentQuiz.questions.length}`;
+            
+            // Update question info
+            document.getElementById('questionTopic').textContent = question.topic;
+            document.getElementById('questionDifficulty').textContent = question.difficulty;
+            document.getElementById('questionText').textContent = question.question;
+            
+            // Update choices
+            const choicesContainer = document.getElementById('questionChoices');
+            choicesContainer.innerHTML = '';
+            
+            question.choices.forEach((choice, index) => {
+                const choiceElement = document.createElement('div');
+                choiceElement.className = 'choice-option';
+                choiceElement.onclick = () => selectAnswer(index);
+                choiceElement.innerHTML = `
+                    <div class="choice-letter">${String.fromCharCode(65 + index)}</div>
+                    <div class="choice-text">${choice}</div>
+                `;
+                choicesContainer.appendChild(choiceElement);
+            });
+            
+            // Reset timer
+            startTimer();
+            
+            // Update points
+            document.getElementById('currentPoints').textContent = currentQuiz.score;
+        }
+        
+        function selectAnswer(index) {
+            selectedAnswer = index;
+            
+            // Update UI
+            document.querySelectorAll('.choice-option').forEach((el, i) => {
+                el.classList.toggle('selected', i === index);
+            });
+            
+            document.getElementById('submitButton').disabled = false;
+        }
+        
+        function startTimer() {
+            timeRemaining = 30;
+            updateTimerDisplay();
+            
+            quizTimer = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(quizTimer);
+                    submitAnswer();
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const progress = (timeRemaining / 30) * 100;
+            const circumference = 2 * Math.PI * 45;
+            const offset = circumference - (progress / 100) * circumference;
+            
+            document.getElementById('timerProgress').style.strokeDashoffset = offset;
+            document.getElementById('timerText').textContent = timeRemaining;
+            
+            // Change color based on time remaining
+            const timerProgress = document.getElementById('timerProgress');
+            if (timeRemaining <= 10) {
+                timerProgress.style.stroke = '#e74c3c';
+            } else if (timeRemaining <= 20) {
+                timerProgress.style.stroke = '#f39c12';
+            } else {
+                timerProgress.style.stroke = '#27ae60';
+            }
+        }
+        
+        function submitAnswer() {
+            if (selectedAnswer === null) {
+                selectedAnswer = -1; // No answer selected
+            }
+            
+            clearInterval(quizTimer);
+            
+            const question = currentQuiz.questions[currentQuestion];
+            const isCorrect = selectedAnswer === question.correct;
+            const timeBonus = Math.max(0, timeRemaining - 10);
+            const points = isCorrect ? (10 + timeBonus) : 0;
+            
+            currentQuiz.score += points;
+            if (isCorrect) currentQuiz.correctAnswers++;
+            
+            currentQuiz.answers.push({
+                question: currentQuestion,
+                selected: selectedAnswer,
+                correct: question.correct,
+                isCorrect: isCorrect,
+                timeSpent: 30 - timeRemaining,
+                points: points
+            });
+            
+            // Show feedback
+            showAnswerFeedback(isCorrect, question.explanation);
+            
+            // Move to next question or finish
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < currentQuiz.questions.length) {
+                    showQuestion();
+                } else {
+                    finishQuiz();
+                }
+            }, 2000);
+        }
+        
+        function showAnswerFeedback(isCorrect, explanation) {
+            const choices = document.querySelectorAll('.choice-option');
+            choices.forEach((choice, index) => {
+                const question = currentQuiz.questions[currentQuestion];
+                if (index === question.correct) {
+                    choice.classList.add('correct');
+                } else if (index === selectedAnswer && !isCorrect) {
+                    choice.classList.add('incorrect');
+                }
+            });
+            
+            // Show explanation
+            const explanationDiv = document.createElement('div');
+            explanationDiv.className = 'answer-explanation';
+            explanationDiv.innerHTML = `
+                <div class="explanation-icon">${isCorrect ? '✅' : '❌'}</div>
+                <div class="explanation-text">
+                    <strong>${isCorrect ? 'Correto!' : 'Incorreto!'}</strong><br>
+                    ${explanation}
+                </div>
+            `;
+            
+            document.querySelector('.question-container').appendChild(explanationDiv);
+        }
+        
+        function skipQuestion() {
+            submitAnswer();
+        }
+        
+        function finishQuiz() {
+            // Calculate final stats
+            const accuracy = (currentQuiz.correctAnswers / currentQuiz.questions.length) * 100;
+            const averageTime = currentQuiz.answers.reduce((sum, ans) => sum + ans.timeSpent, 0) / currentQuiz.answers.length;
+            
+            // Update user stats
+            userStats.quizzesCompleted++;
+            userStats.totalQuestions += currentQuiz.questions.length;
+            userStats.correctAnswers += currentQuiz.correctAnswers;
+            userStats.accuracy = (userStats.correctAnswers / userStats.totalQuestions) * 100;
+            userStats.points += currentQuiz.score;
+            
+            // Check for level up
+            const newLevel = Math.floor(userStats.points / 1000) + 1;
+            if (newLevel > userStats.level) {
+                userStats.level = newLevel;
+                showLevelUp();
+            }
+            
+            // Check for badges
+            const newBadges = checkForBadges();
+            
+            // Save stats
+            saveUserStats();
+            
+            // Show results
+            showResults(accuracy, averageTime, newBadges);
+        }
+        
+        function checkForBadges() {
+            const newBadges = [];
+            
+            // First quiz badge
+            if (userStats.quizzesCompleted === 1 && !userStats.badges.includes('first_quiz')) {
+                userStats.badges.push('first_quiz');
+                newBadges.push('first_quiz');
+            }
+            
+            // Perfect score badge
+            if (currentQuiz.correctAnswers === currentQuiz.questions.length && !userStats.badges.includes('perfect_score')) {
+                userStats.badges.push('perfect_score');
+                newBadges.push('perfect_score');
+            }
+            
+            // Speed demon badge
+            const fastAnswers = currentQuiz.answers.filter(ans => ans.timeSpent < 10).length;
+            if (fastAnswers >= 3 && !userStats.badges.includes('speed_demon')) {
+                userStats.badges.push('speed_demon');
+                newBadges.push('speed_demon');
+            }
+            
+            // Scholar badge
+            if (userStats.quizzesCompleted >= 10 && !userStats.badges.includes('scholar')) {
+                userStats.badges.push('scholar');
+                newBadges.push('scholar');
+            }
+            
+            // Expert badge
+            if (userStats.level >= 10 && !userStats.badges.includes('expert')) {
+                userStats.badges.push('expert');
+                newBadges.push('expert');
+            }
+            
+            return newBadges;
+        }
+        
+        function showLevelUp() {
+            // Show level up animation
+            const levelUpDiv = document.createElement('div');
+            levelUpDiv.className = 'level-up-notification';
+            levelUpDiv.innerHTML = `
+                <div class="level-up-content">
+                    <div class="level-up-icon">🎉</div>
+                    <h2>Level Up!</h2>
+                    <p>Você alcançou o nível ${userStats.level}!</p>
+                </div>
+            `;
+            document.body.appendChild(levelUpDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(levelUpDiv);
+            }, 3000);
+        }
+        
+        function showResults(accuracy, averageTime, newBadges) {
+            document.getElementById('quizScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+            
+            // Update results
+            document.getElementById('finalScore').textContent = currentQuiz.score;
+            document.getElementById('correctAnswers').textContent = `${currentQuiz.correctAnswers}/${currentQuiz.questions.length}`;
+            document.getElementById('averageTime').textContent = averageTime.toFixed(1) + 's';
+            document.getElementById('newBadges').textContent = newBadges.length;
+            
+            // Update results icon and title based on performance
+            const resultsIcon = document.getElementById('resultsIcon');
+            const resultsTitle = document.getElementById('resultsTitle');
+            const resultsSubtitle = document.getElementById('resultsSubtitle');
+            
+            if (accuracy >= 90) {
+                resultsIcon.textContent = '🏆';
+                resultsTitle.textContent = 'Excelente!';
+                resultsSubtitle.textContent = 'Você dominou o conteúdo!';
+            } else if (accuracy >= 70) {
+                resultsIcon.textContent = '🎉';
+                resultsTitle.textContent = 'Muito Bom!';
+                resultsSubtitle.textContent = 'Continue estudando!';
+            } else {
+                resultsIcon.textContent = '📚';
+                resultsTitle.textContent = 'Bom Trabalho!';
+                resultsSubtitle.textContent = 'Pratique mais para melhorar!';
+            }
+            
+            // Show topic breakdown
+            showTopicBreakdown();
+        }
+        
+        function showTopicBreakdown() {
+            const breakdown = {};
+            currentQuiz.answers.forEach((answer, index) => {
+                const question = currentQuiz.questions[index];
+                if (!breakdown[question.topic]) {
+                    breakdown[question.topic] = { total: 0, correct: 0 };
+                }
+                breakdown[question.topic].total++;
+                if (answer.isCorrect) {
+                    breakdown[question.topic].correct++;
+                }
+            });
+            
+            const breakdownContainer = document.getElementById('topicBreakdown');
+            breakdownContainer.innerHTML = '';
+            
+            Object.entries(breakdown).forEach(([topic, stats]) => {
+                const accuracy = (stats.correct / stats.total) * 100;
+                const topicDiv = document.createElement('div');
+                topicDiv.className = 'topic-item';
+                topicDiv.innerHTML = `
+                    <div class="topic-name">${topic}</div>
+                    <div class="topic-stats">
+                        <span class="topic-accuracy">${accuracy.toFixed(1)}%</span>
+                        <span class="topic-details">${stats.correct}/${stats.total}</span>
+                    </div>
+                `;
+                breakdownContainer.appendChild(topicDiv);
+            });
+        }
+        
+        function retryQuiz() {
+            startQuiz(currentQuiz.difficulty);
+        }
+        
+        function backToHome() {
+            document.getElementById('quizScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('leaderboardScreen').style.display = 'none';
+            document.getElementById('profileScreen').style.display = 'none';
+            document.getElementById('badgesScreen').style.display = 'none';
+            document.getElementById('quizHome').style.display = 'block';
+            
+            updateHomeStats();
+        }
+        
+        function showLeaderboard() {
+            document.getElementById('quizHome').style.display = 'none';
+            document.getElementById('leaderboardScreen').style.display = 'block';
+            
+            loadLeaderboard('global');
+        }
+        
+        function showLeaderboardTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="showLeaderboardTab('${tab}')"]`).classList.add('active');
+            
+            loadLeaderboard(tab);
+        }
+        
+        function loadLeaderboard(type) {
+            // Mock leaderboard data
+            const leaderboard = [
+                { name: 'João Silva', level: 15, points: 15000, accuracy: 95.2 },
+                { name: 'Maria Santos', level: 12, points: 12000, accuracy: 92.8 },
+                { name: 'Pedro Costa', level: 10, points: 10000, accuracy: 89.5 },
+                { name: 'Ana Oliveira', level: 8, points: 8000, accuracy: 87.3 },
+                { name: 'Carlos Lima', level: 7, points: 7000, accuracy: 85.1 }
+            ];
+            
+            const listContainer = document.getElementById('leaderboardList');
+            listContainer.innerHTML = '';
+            
+            leaderboard.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'leaderboard-entry';
+                playerDiv.innerHTML = `
+                    <div class="rank">${index + 1}</div>
+                    <div class="player-info">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-level">Nível ${player.level}</div>
+                    </div>
+                    <div class="player-stats">
+                        <div class="player-points">${player.points.toLocaleString()} pts</div>
+                        <div class="player-accuracy">${player.accuracy}%</div>
+                    </div>
+                `;
+                listContainer.appendChild(playerDiv);
+            });
+        }
+        
+        function showProfile() {
+            document.getElementById('quizHome').style.display = 'none';
+            document.getElementById('profileScreen').style.display = 'block';
+            
+            updateProfileStats();
+        }
+        
+        function updateProfileStats() {
+            document.getElementById('quizzesCompleted').textContent = userStats.quizzesCompleted;
+            document.getElementById('totalPointsProfile').textContent = userStats.points;
+            document.getElementById('currentLevelProfile').textContent = userStats.level;
+            document.getElementById('accuracyProfile').textContent = userStats.accuracy.toFixed(1) + '%';
+            
+            // Update performance chart
+            createPerformanceChart();
+        }
+        
+        function createPerformanceChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            // Mock performance data
+            const labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
+            const data = [65, 72, 68, 75, 82, 78];
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Taxa de Acerto (%)',
+                        data: data,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function showBadges() {
+            document.getElementById('quizHome').style.display = 'none';
+            document.getElementById('badgesScreen').style.display = 'block';
+            
+            loadBadges();
+        }
+        
+        function loadBadges() {
+            const badgesContainer = document.getElementById('badgesGrid');
+            badgesContainer.innerHTML = '';
+            
+            Object.entries(BADGES).forEach(([key, badge]) => {
+                const hasBadge = userStats.badges.includes(key);
+                const badgeDiv = document.createElement('div');
+                badgeDiv.className = `badge-item ${hasBadge ? 'earned' : 'locked'}`;
+                badgeDiv.innerHTML = `
+                    <div class="badge-icon">${badge.icon}</div>
+                    <div class="badge-name">${badge.name}</div>
+                    <div class="badge-description">${badge.description}</div>
+                    <div class="badge-points">${badge.points} pts</div>
+                    <div class="badge-status">${hasBadge ? 'Conquistado!' : 'Bloqueado'}</div>
+                `;
+                badgesContainer.appendChild(badgeDiv);
+            });
+        }
+    </script>
+</body>
+</html>
+

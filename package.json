@@ -1,0 +1,19 @@
+{
+  "name": "hub-financeiro",
+  "version": "1.0.0",
+  "description": "Hub Financeiro - Aplicação de funções financeiras",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "npx http-server . -p 3001"
+  },
+  "keywords": ["financeiro", "typescript", "spa"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "http-server": "^14.1.1"
+  }
+}

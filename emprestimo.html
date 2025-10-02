@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Empréstimos - Hub Financeiro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="emprestimo.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button class="back-button" onclick="window.location.href='index.html'">← Voltar ao Hub</button>
+            <h1>💰 Simulador de Empréstimos</h1>
+            <p>Calcule parcelas, CET e impacto no orçamento com precisão</p>
+            <div class="data-source">
+                <span>📊 Cálculos baseados no Sistema Francês (PRICE) com CET</span>
+            </div>
+        </header>
+
+        <div class="simulator-container">
+            <!-- Input Form -->
+            <div class="input-section">
+                <div class="form-header">
+                    <h2>📝 Dados do Empréstimo</h2>
+                    <p>Preencha os dados para simular o empréstimo</p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="loanType">Tipo de Empréstimo</label>
+                        <select id="loanType" onchange="updateFormLabels()">
+                            <option value="pessoal">Pessoal</option>
+                            <option value="consignado">Consignado</option>
+                            <option value="imobiliario">Imobiliário</option>
+                            <option value="veiculo">Veículo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loanAmount">Valor do Empréstimo</label>
+                        <div class="input-with-icon">
+                            <span class="currency-symbol">R$</span>
+                            <input type="number" id="loanAmount" placeholder="0,00" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="termMonths">Prazo (meses)</label>
+                        <input type="number" id="termMonths" placeholder="0" min="1" max="480">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interestRate">Taxa de Juros</label>
+                        <div class="rate-input-group">
+                            <div class="input-with-icon">
+                                <span class="percentage-symbol">%</span>
+                                <input type="number" id="interestRate" placeholder="0,00" step="0.01" min="0" max="100">
+                            </div>
+                            <select id="ratePeriod" onchange="convertRate()">
+                                <option value="monthly">a.m.</option>
+                                <option value="yearly">a.a.</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gracePeriod">Período de Carência</label>
+                        <select id="gracePeriod">
+                            <option value="0">Sem carência</option>
+                            <option value="1">1 mês</option>
+                            <option value="2">2 meses</option>
+                            <option value="3">3 meses</option>
+                            <option value="6">6 meses</option>
+                            <option value="12">12 meses</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="graceType">Tipo de Carência</label>
+                        <select id="graceType">
+                            <option value="none">Sem carência</option>
+                            <option value="interest_only">Só juros</option>
+                            <option value="full_grace">Carência total</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Fees Section -->
+                <div class="fees-section">
+                    <h3>💳 Taxas e Tarifas</h3>
+                    <div class="fees-grid">
+                        <div class="form-group">
+                            <label for="originationFee">Taxa de Abertura</label>
+                            <div class="input-with-icon">
+                                <span class="currency-symbol">R$</span>
+                                <input type="number" id="originationFee" placeholder="0,00" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="registrationFee">Taxa de Registro</label>
+                            <div class="input-with-icon">
+                                <span class="currency-symbol">R$</span>
+                                <input type="number" id="registrationFee" placeholder="0,00" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="monthlyFee">Taxa Mensal</label>
+                            <div class="input-with-icon">
+                                <span class="currency-symbol">R$</span>
+                                <input type="number" id="monthlyFee" placeholder="0,00" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="iofRate">IOF</label>
+                            <div class="input-with-icon">
+                                <span class="percentage-symbol">%</span>
+                                <input type="number" id="iofRate" placeholder="0,00" step="0.01" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extra Payments Section -->
+                <div class="extra-payments-section">
+                    <h3>💸 Amortizações Extras</h3>
+                    <div class="extra-payments-controls">
+                        <button type="button" class="add-extra-payment" onclick="addExtraPayment()">
+                            ➕ Adicionar Amortização Extra
+                        </button>
+                    </div>
+                    <div class="extra-payments-list" id="extraPaymentsList">
+                        <!-- Extra payments will be dynamically added here -->
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="action-button primary" onclick="calculateLoan()">
+                        🧮 Calcular Empréstimo
+                    </button>
+                    <button class="action-button secondary" onclick="clearForm()">
+                        🗑️ Limpar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-header">
+                    <h2>📊 Resultados da Simulação</h2>
+                    <div class="results-actions">
+                        <button class="action-button" onclick="exportToPDF()">
+                            📄 Exportar PDF
+                        </button>
+                        <button class="action-button secondary" onclick="exportToExcel()">
+                            📊 Exportar Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards" id="summaryCards">
+                    <!-- Summary cards will be dynamically generated -->
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-section">
+                    <div class="chart-container">
+                        <h3>Fluxo de Caixa</h3>
+                        <canvas id="cashFlowChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Evolução do Saldo Devedor</h3>
+                        <canvas id="balanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Detailed Analysis -->
+                <div class="analysis-section">
+                    <div class="analysis-tabs">
+                        <button class="tab-button active" onclick="showAnalysisTab('summary')">Resumo</button>
+                        <button class="tab-button" onclick="showAnalysisTab('schedule')">Cronograma</button>
+                        <button class="tab-button" onclick="showAnalysisTab('cet')">CET</button>
+                        <button class="tab-button" onclick="showAnalysisTab('budget')">Orçamento</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- Summary Tab -->
+                        <div class="tab-panel active" id="summaryTab">
+                            <div class="summary-table">
+                                <table id="summaryTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Métrica</th>
+                                            <th>Valor</th>
+                                            <th>% do Empréstimo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="summaryTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Schedule Tab -->
+                        <div class="tab-panel" id="scheduleTab">
+                            <div class="schedule-controls">
+                                <input type="text" id="scheduleSearch" placeholder="Buscar período..." onkeyup="filterSchedule()">
+                                <select id="schedulePageSize" onchange="changeSchedulePageSize()">
+                                    <option value="12">12 períodos</option>
+                                    <option value="24">24 períodos</option>
+                                    <option value="36">36 períodos</option>
+                                    <option value="all">Todos</option>
+                                </select>
+                            </div>
+                            <div class="table-container">
+                                <table id="scheduleTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Período</th>
+                                            <th>Saldo Inicial</th>
+                                            <th>Parcela</th>
+                                            <th>Amortização</th>
+                                            <th>Juros</th>
+                                            <th>Taxas</th>
+                                            <th>Saldo Final</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scheduleTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pagination" id="schedulePagination">
+                            </div>
+                        </div>
+
+                        <!-- CET Tab -->
+                        <div class="tab-panel" id="cetTab">
+                            <div class="cet-analysis">
+                                <div class="cet-breakdown">
+                                    <h3>📈 Análise do CET (Custo Efetivo Total)</h3>
+                                    <div class="cet-grid">
+                                        <div class="cet-item">
+                                            <h4>Taxa Nominal</h4>
+                                            <span class="cet-value" id="nominalRate">0,00%</span>
+                                        </div>
+                                        <div class="cet-item">
+                                            <h4>CET Mensal</h4>
+                                            <span class="cet-value" id="cetMonthly">0,00%</span>
+                                        </div>
+                                        <div class="cet-item">
+                                            <h4>CET Anual</h4>
+                                            <span class="cet-value" id="cetYearly">0,00%</span>
+                                        </div>
+                                        <div class="cet-item">
+                                            <h4>Diferença</h4>
+                                            <span class="cet-value" id="cetDifference">0,00%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="cet-explanation">
+                                    <h4>💡 O que é o CET?</h4>
+                                    <p>O Custo Efetivo Total (CET) é a taxa que representa o custo real do empréstimo, 
+                                    incluindo todos os encargos, taxas e juros. É calculado de forma a permitir a 
+                                    comparação entre diferentes ofertas de crédito.</p>
+                                    
+                                    <div class="cet-components">
+                                        <h5>Componentes do CET:</h5>
+                                        <ul>
+                                            <li>Taxa de juros nominal</li>
+                                            <li>Taxa de abertura de crédito</li>
+                                            <li>Taxa de registro</li>
+                                            <li>IOF (Imposto sobre Operações Financeiras)</li>
+                                            <li>Outras taxas e encargos</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Budget Tab -->
+                        <div class="tab-panel" id="budgetTab">
+                            <div class="budget-analysis">
+                                <div class="budget-input">
+                                    <h3>💰 Análise de Orçamento</h3>
+                                    <div class="budget-form">
+                                        <div class="form-group">
+                                            <label for="monthlyIncome">Renda Mensal</label>
+                                            <div class="input-with-icon">
+                                                <span class="currency-symbol">R$</span>
+                                                <input type="number" id="monthlyIncome" placeholder="0,00" step="0.01" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="monthlyExpenses">Despesas Mensais</label>
+                                            <div class="input-with-icon">
+                                                <span class="currency-symbol">R$</span>
+                                                <input type="number" id="monthlyExpenses" placeholder="0,00" step="0.01" min="0">
+                                            </div>
+                                        </div>
+                                        <button class="action-button" onclick="analyzeBudget()">
+                                            📊 Analisar Orçamento
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="budget-results" id="budgetResults" style="display: none;">
+                                    <div class="budget-metrics">
+                                        <div class="budget-metric">
+                                            <h4>Renda Disponível</h4>
+                                            <span class="metric-value" id="availableIncome">R$ 0,00</span>
+                                        </div>
+                                        <div class="budget-metric">
+                                            <h4>Parcela do Empréstimo</h4>
+                                            <span class="metric-value" id="loanPayment">R$ 0,00</span>
+                                        </div>
+                                        <div class="budget-metric">
+                                            <h4>% da Renda</h4>
+                                            <span class="metric-value" id="incomePercentage">0%</span>
+                                        </div>
+                                        <div class="budget-metric">
+                                            <h4>Renda Restante</h4>
+                                            <span class="metric-value" id="remainingIncome">R$ 0,00</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="budget-recommendation" id="budgetRecommendation">
+                                        <!-- Budget recommendation will be dynamically generated -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <h3>❓ Como Usar</h3>
+                <div class="help-content">
+                    <div class="help-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Preencha os dados básicos</h4>
+                            <p>Informe o valor, prazo, taxa de juros e tipo de empréstimo desejado.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Configure taxas e tarifas</h4>
+                            <p>Adicione taxas de abertura, registro, mensais e IOF conforme sua oferta.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Analise os resultados</h4>
+                            <p>Veja o CET, cronograma de pagamentos e impacto no orçamento.</p>
+                        </div>
+                    </div>
+                    <div class="help-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Compare opções</h4>
+                            <p>Use o simulador para comparar diferentes ofertas de empréstimo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Loan Simulator
+        console.log('Loan Simulator: Starting...');
+        
+        let currentResults = null;
+        let currentTab = 'summary';
+        let cashFlowChart = null;
+        let balanceChart = null;
+        let extraPayments = [];
+        
+        // Initialize simulator
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Loan Simulator: DOM loaded, initializing...');
+            setupEventListeners();
+            updateFormLabels();
+            console.log('Loan Simulator: Initialized successfully!');
+        });
+        
+        function setupEventListeners() {
+            // Format inputs
+            document.getElementById('loanAmount').addEventListener('blur', formatCurrency);
+            document.getElementById('originationFee').addEventListener('blur', formatCurrency);
+            document.getElementById('registrationFee').addEventListener('blur', formatCurrency);
+            document.getElementById('monthlyFee').addEventListener('blur', formatCurrency);
+            document.getElementById('interestRate').addEventListener('blur', formatPercentage);
+            document.getElementById('iofRate').addEventListener('blur', formatPercentage);
+            document.getElementById('monthlyIncome').addEventListener('blur', formatCurrency);
+            document.getElementById('monthlyExpenses').addEventListener('blur', formatCurrency);
+        }
+        
+        function updateFormLabels() {
+            const type = document.getElementById('loanType').value;
+            // Could update labels based on loan type
+        }
+        
+        function convertRate() {
+            const rate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const period = document.getElementById('ratePeriod').value;
+            
+            if (period === 'yearly') {
+                // Convert yearly to monthly
+                const monthlyRate = Math.pow(1 + rate / 100, 1/12) - 1;
+                document.getElementById('interestRate').value = (monthlyRate * 100).toFixed(4);
+            } else {
+                // Convert monthly to yearly
+                const yearlyRate = Math.pow(1 + rate / 100, 12) - 1;
+                document.getElementById('interestRate').value = (yearlyRate * 100).toFixed(2);
+            }
+        }
+        
+        function addExtraPayment() {
+            const extraPaymentDiv = document.createElement('div');
+            extraPaymentDiv.className = 'extra-payment-item';
+            extraPaymentDiv.innerHTML = `
+                <div class="extra-payment-form">
+                    <div class="form-group">
+                        <label>Mês</label>
+                        <input type="number" class="extra-month" placeholder="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <div class="input-with-icon">
+                            <span class="currency-symbol">R$</span>
+                            <input type="number" class="extra-amount" placeholder="0,00" step="0.01" min="0">
+                        </div>
+                    </div>
+                    <button type="button" class="remove-extra-payment" onclick="removeExtraPayment(this)">
+                        🗑️
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('extraPaymentsList').appendChild(extraPaymentDiv);
+        }
+        
+        function removeExtraPayment(button) {
+            button.closest('.extra-payment-item').remove();
+        }
+        
+        function calculateLoan() {
+            // Get form values
+            const loanAmount = parseFloat(document.getElementById('loanAmount').value) || 0;
+            const termMonths = parseInt(document.getElementById('termMonths').value) || 0;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const gracePeriod = parseInt(document.getElementById('gracePeriod').value) || 0;
+            const graceType = document.getElementById('graceType').value;
+            
+            const originationFee = parseFloat(document.getElementById('originationFee').value) || 0;
+            const registrationFee = parseFloat(document.getElementById('registrationFee').value) || 0;
+            const monthlyFee = parseFloat(document.getElementById('monthlyFee').value) || 0;
+            const iofRate = parseFloat(document.getElementById('iofRate').value) || 0;
+            
+            // Validation
+            if (loanAmount <= 0) {
+                alert('Por favor, informe o valor do empréstimo.');
+                return;
+            }
+            
+            if (termMonths <= 0) {
+                alert('Por favor, informe o prazo em meses.');
+                return;
+            }
+            
+            if (interestRate <= 0) {
+                alert('Por favor, informe a taxa de juros.');
+                return;
+            }
+            
+            const monthlyRate = interestRate / 100;
+            const iofAmount = loanAmount * (iofRate / 100);
+            const netLoanAmount = loanAmount - originationFee - registrationFee - iofAmount;
+            
+            // Calculate loan
+            const results = calculateLoanSchedule(
+                netLoanAmount, 
+                monthlyRate, 
+                termMonths, 
+                gracePeriod, 
+                graceType,
+                monthlyFee,
+                extraPayments
+            );
+            
+            currentResults = {
+                ...results,
+                loanAmount,
+                termMonths,
+                interestRate,
+                originationFee,
+                registrationFee,
+                monthlyFee,
+                iofAmount,
+                netLoanAmount
+            };
+            
+            showResults();
+        }
+        
+        function calculateLoanSchedule(principal, monthlyRate, termMonths, gracePeriod, graceType, monthlyFee, extraPayments) {
+            const schedule = [];
+            let balance = principal;
+            let totalInterest = 0;
+            let totalFees = 0;
+            let totalExtraPayments = 0;
+            
+            // Calculate base payment using PRICE formula
+            const basePayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, termMonths)) / 
+                               (Math.pow(1 + monthlyRate, termMonths) - 1);
+            
+            for (let month = 1; month <= termMonths; month++) {
+                const interest = balance * monthlyRate;
+                let payment = 0;
+                let amortization = 0;
+                let extraPayment = 0;
+                
+                // Handle grace period
+                if (month <= gracePeriod) {
+                    if (graceType === 'interest_only') {
+                        payment = interest + monthlyFee;
+                        amortization = 0;
+                    } else if (graceType === 'full_grace') {
+                        payment = monthlyFee;
+                        amortization = 0;
+                    } else {
+                        payment = basePayment + monthlyFee;
+                        amortization = basePayment - interest;
+                    }
+                } else {
+                    payment = basePayment + monthlyFee;
+                    amortization = basePayment - interest;
+                }
+                
+                // Add extra payments
+                const extraPaymentForMonth = extraPayments.find(ep => ep.month === month);
+                if (extraPaymentForMonth) {
+                    extraPayment = extraPaymentForMonth.amount;
+                    payment += extraPayment;
+                    amortization += extraPayment;
+                    totalExtraPayments += extraPayment;
+                }
+                
+                const newBalance = balance - amortization;
+                
+                schedule.push({
+                    month,
+                    initialBalance: balance,
+                    payment,
+                    amortization,
+                    interest,
+                    fee: monthlyFee,
+                    extraPayment,
+                    finalBalance: newBalance
+                });
+                
+                totalInterest += interest;
+                totalFees += monthlyFee;
+                balance = newBalance;
+            }
+            
+            // Calculate CET
+            const totalPaid = principal + totalInterest + totalFees + totalExtraPayments;
+            const cetMonthly = calculateCET(principal, schedule);
+            const cetYearly = Math.pow(1 + cetMonthly, 12) - 1;
+            
+            return {
+                schedule,
+                basePayment,
+                totalInterest,
+                totalFees,
+                totalExtraPayments,
+                totalPaid,
+                cetMonthly,
+                cetYearly,
+                finalBalance: balance
+            };
+        }
+        
+        function calculateCET(principal, schedule) {
+            // Simplified CET calculation using IRR approximation
+            const cashFlows = [-principal];
+            schedule.forEach(period => {
+                cashFlows.push(period.payment);
+            });
+            
+            // Use Newton-Raphson method to find IRR
+            let rate = 0.01; // Initial guess
+            for (let i = 0; i < 100; i++) {
+                const npv = calculateNPV(cashFlows, rate);
+                const npvDerivative = calculateNPVDerivative(cashFlows, rate);
+                
+                if (Math.abs(npvDerivative) < 1e-10) break;
+                
+                const newRate = rate - npv / npvDerivative;
+                if (Math.abs(newRate - rate) < 1e-10) break;
+                
+                rate = newRate;
+            }
+            
+            return rate;
+        }
+        
+        function calculateNPV(cashFlows, rate) {
+            let npv = 0;
+            for (let i = 0; i < cashFlows.length; i++) {
+                npv += cashFlows[i] / Math.pow(1 + rate, i);
+            }
+            return npv;
+        }
+        
+        function calculateNPVDerivative(cashFlows, rate) {
+            let derivative = 0;
+            for (let i = 1; i < cashFlows.length; i++) {
+                derivative -= i * cashFlows[i] / Math.pow(1 + rate, i + 1);
+            }
+            return derivative;
+        }
+        
+        function showResults() {
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            updateSummaryCards();
+            createCharts();
+            updateSummaryTable();
+            updateScheduleTable();
+            updateCETAnalysis();
+            
+            // Scroll to results
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function updateSummaryCards() {
+            const container = document.getElementById('summaryCards');
+            container.innerHTML = '';
+            
+            const cards = [
+                {
+                    title: 'Valor da Parcela',
+                    value: formatCurrency(currentResults.basePayment),
+                    icon: '💰',
+                    color: '#3498db'
+                },
+                {
+                    title: 'CET Anual',
+                    value: (currentResults.cetYearly * 100).toFixed(2) + '%',
+                    icon: '📈',
+                    color: '#e74c3c'
+                },
+                {
+                    title: 'Total Pago',
+                    value: formatCurrency(currentResults.totalPaid),
+                    icon: '💸',
+                    color: '#f39c12'
+                },
+                {
+                    title: 'Total Juros',
+                    value: formatCurrency(currentResults.totalInterest),
+                    icon: '📊',
+                    color: '#9b59b6'
+                }
+            ];
+            
+            cards.forEach(card => {
+                const cardElement = createSummaryCard(card);
+                container.appendChild(cardElement);
+            });
+        }
+        
+        function createSummaryCard(card) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'summary-card';
+            cardElement.style.borderLeftColor = card.color;
+            
+            cardElement.innerHTML = `
+                <div class="card-header">
+                    <div class="card-icon">${card.icon}</div>
+                    <h3>${card.title}</h3>
+                </div>
+                <div class="card-value">${card.value}</div>
+            `;
+            
+            return cardElement;
+        }
+        
+        function createCharts() {
+            createCashFlowChart();
+            createBalanceChart();
+        }
+        
+        function createCashFlowChart() {
+            const ctx = document.getElementById('cashFlowChart').getContext('2d');
+            
+            if (cashFlowChart) {
+                cashFlowChart.destroy();
+            }
+            
+            const labels = currentResults.schedule.map((_, i) => `Mês ${i + 1}`);
+            const payments = currentResults.schedule.map(period => period.payment);
+            const interests = currentResults.schedule.map(period => period.interest);
+            const amortizations = currentResults.schedule.map(period => period.amortization);
+            
+            cashFlowChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Juros',
+                            data: interests,
+                            backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                            borderColor: '#e74c3c',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Amortização',
+                            data: amortizations,
+                            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                            borderColor: '#3498db',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': R$ ' + context.parsed.y.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createBalanceChart() {
+            const ctx = document.getElementById('balanceChart').getContext('2d');
+            
+            if (balanceChart) {
+                balanceChart.destroy();
+            }
+            
+            const labels = currentResults.schedule.map((_, i) => `Mês ${i + 1}`);
+            const balances = currentResults.schedule.map(period => period.finalBalance);
+            
+            balanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Saldo Devedor',
+                        data: balances,
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Saldo: R$ ' + context.parsed.y.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateSummaryTable() {
+            const tbody = document.getElementById('summaryTableBody');
+            tbody.innerHTML = '';
+            
+            const metrics = [
+                { label: 'Valor do Empréstimo', value: currentResults.loanAmount },
+                { label: 'Taxas e Tarifas', value: currentResults.originationFee + currentResults.registrationFee + currentResults.iofAmount },
+                { label: 'Valor Líquido', value: currentResults.netLoanAmount },
+                { label: 'Valor da Parcela', value: currentResults.basePayment },
+                { label: 'Total de Juros', value: currentResults.totalInterest },
+                { label: 'Total de Taxas', value: currentResults.totalFees },
+                { label: 'Total Pago', value: currentResults.totalPaid },
+                { label: 'CET Mensal', value: currentResults.cetMonthly * 100 },
+                { label: 'CET Anual', value: currentResults.cetYearly * 100 }
+            ];
+            
+            metrics.forEach(metric => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = metric.label;
+                row.insertCell().textContent = formatCurrency(metric.value);
+                row.insertCell().textContent = ((metric.value / currentResults.loanAmount) * 100).toFixed(2) + '%';
+            });
+        }
+        
+        function updateScheduleTable() {
+            const tbody = document.getElementById('scheduleTableBody');
+            tbody.innerHTML = '';
+            
+            currentResults.schedule.forEach(period => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = period.month;
+                row.insertCell().textContent = formatCurrency(period.initialBalance);
+                row.insertCell().textContent = formatCurrency(period.payment);
+                row.insertCell().textContent = formatCurrency(period.amortization);
+                row.insertCell().textContent = formatCurrency(period.interest);
+                row.insertCell().textContent = formatCurrency(period.fee);
+                row.insertCell().textContent = formatCurrency(period.finalBalance);
+            });
+        }
+        
+        function updateCETAnalysis() {
+            document.getElementById('nominalRate').textContent = currentResults.interestRate.toFixed(2) + '%';
+            document.getElementById('cetMonthly').textContent = (currentResults.cetMonthly * 100).toFixed(4) + '%';
+            document.getElementById('cetYearly').textContent = (currentResults.cetYearly * 100).toFixed(2) + '%';
+            
+            const difference = (currentResults.cetYearly - currentResults.interestRate / 100) * 100;
+            document.getElementById('cetDifference').textContent = difference.toFixed(2) + '%';
+        }
+        
+        function analyzeBudget() {
+            const monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value) || 0;
+            const monthlyExpenses = parseFloat(document.getElementById('monthlyExpenses').value) || 0;
+            
+            if (monthlyIncome <= 0) {
+                alert('Por favor, informe sua renda mensal.');
+                return;
+            }
+            
+            const availableIncome = monthlyIncome - monthlyExpenses;
+            const loanPayment = currentResults.basePayment;
+            const incomePercentage = (loanPayment / monthlyIncome) * 100;
+            const remainingIncome = availableIncome - loanPayment;
+            
+            document.getElementById('availableIncome').textContent = formatCurrency(availableIncome);
+            document.getElementById('loanPayment').textContent = formatCurrency(loanPayment);
+            document.getElementById('incomePercentage').textContent = incomePercentage.toFixed(1) + '%';
+            document.getElementById('remainingIncome').textContent = formatCurrency(remainingIncome);
+            
+            // Generate recommendation
+            let recommendation = '';
+            if (incomePercentage <= 30) {
+                recommendation = `
+                    <div class="recommendation-card positive">
+                        <h4>✅ Empréstimo Viável</h4>
+                        <p>A parcela representa ${incomePercentage.toFixed(1)}% da sua renda, 
+                        o que está dentro do limite recomendado de 30%.</p>
+                    </div>
+                `;
+            } else if (incomePercentage <= 50) {
+                recommendation = `
+                    <div class="recommendation-card warning">
+                        <h4>⚠️ Atenção</h4>
+                        <p>A parcela representa ${incomePercentage.toFixed(1)}% da sua renda, 
+                        o que pode comprometer seu orçamento. Considere negociar condições melhores.</p>
+                    </div>
+                `;
+            } else {
+                recommendation = `
+                    <div class="recommendation-card negative">
+                        <h4>❌ Risco Alto</h4>
+                        <p>A parcela representa ${incomePercentage.toFixed(1)}% da sua renda, 
+                        o que compromete significativamente seu orçamento. Recomenda-se buscar alternativas.</p>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('budgetRecommendation').innerHTML = recommendation;
+            document.getElementById('budgetResults').style.display = 'block';
+        }
+        
+        function showAnalysisTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="showAnalysisTab('${tabName}')"]`).classList.add('active');
+            
+            // Update tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            
+            currentTab = tabName;
+        }
+        
+        function filterSchedule() {
+            // Implementation for filtering schedule table
+            console.log('Filtering schedule...');
+        }
+        
+        function changeSchedulePageSize() {
+            // Implementation for changing page size
+            console.log('Changing schedule page size...');
+        }
+        
+        function clearForm() {
+            document.getElementById('loanAmount').value = '';
+            document.getElementById('termMonths').value = '';
+            document.getElementById('interestRate').value = '';
+            document.getElementById('originationFee').value = '';
+            document.getElementById('registrationFee').value = '';
+            document.getElementById('monthlyFee').value = '';
+            document.getElementById('iofRate').value = '';
+            document.getElementById('monthlyIncome').value = '';
+            document.getElementById('monthlyExpenses').value = '';
+            
+            document.getElementById('extraPaymentsList').innerHTML = '';
+            extraPayments = [];
+            
+            document.getElementById('resultsSection').style.display = 'none';
+            currentResults = null;
+        }
+        
+        function exportToPDF() {
+            console.log('Exporting to PDF...');
+            alert('Funcionalidade de exportação PDF será implementada em breve!');
+        }
+        
+        function exportToExcel() {
+            console.log('Exporting to Excel...');
+            alert('Funcionalidade de exportação Excel será implementada em breve!');
+        }
+        
+        function formatCurrency(event) {
+            const value = parseFloat(event.target.value) || 0;
+            event.target.value = value.toFixed(2);
+        }
+        
+        function formatPercentage(event) {
+            const value = parseFloat(event.target.value) || 0;
+            event.target.value = value.toFixed(2);
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+    </script>
+</body>
+</html>
+
