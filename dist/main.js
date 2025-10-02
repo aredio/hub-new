@@ -3,11 +3,85 @@
 class HubFinanceiro {
     constructor() {
         this.functions = [];
+        this.isDarkMode = true;
+        this.themeToggle = null;
+        this.themeIcon = null;
+        this.themeText = null;
         console.log('HubFinanceiro: Inicializando...');
+        this.initializeTheme();
         this.initializeFunctions();
         this.setupEventListeners();
+        this.setupThemeToggle();
         this.addWelcomeMessage();
+        this.initializeAnimations();
         console.log('HubFinanceiro: Inicializado com sucesso!');
+    }
+    // Inicializa o tema
+    initializeTheme() {
+        // Verifica se há preferência salva no localStorage
+        const savedTheme = localStorage.getItem('hub-financeiro-theme');
+        if (savedTheme) {
+            this.isDarkMode = savedTheme === 'dark';
+        }
+        else {
+            // Verifica preferência do sistema
+            this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        this.applyTheme();
+    }
+    // Aplica o tema atual
+    applyTheme() {
+        const root = document.documentElement;
+        if (this.isDarkMode) {
+            root.classList.add('dark-theme');
+            root.classList.remove('light-theme');
+        }
+        else {
+            root.classList.add('light-theme');
+            root.classList.remove('dark-theme');
+        }
+        // Salva a preferência
+        localStorage.setItem('hub-financeiro-theme', this.isDarkMode ? 'dark' : 'light');
+    }
+    // Configura o botão de alternância de tema
+    setupThemeToggle() {
+        this.themeToggle = document.getElementById('themeToggle');
+        this.themeIcon = document.getElementById('themeIcon');
+        this.themeText = document.getElementById('themeText');
+        if (this.themeToggle && this.themeIcon && this.themeText) {
+            this.updateThemeToggleUI();
+            this.themeToggle.addEventListener('click', () => {
+                this.toggleTheme();
+            });
+        }
+    }
+    // Alterna entre tema claro e escuro
+    toggleTheme() {
+        this.isDarkMode = !this.isDarkMode;
+        this.applyTheme();
+        this.updateThemeToggleUI();
+        this.showNotification(`Tema ${this.isDarkMode ? 'escuro' : 'claro'} ativado`);
+    }
+    // Atualiza a interface do botão de tema
+    updateThemeToggleUI() {
+        if (this.themeIcon && this.themeText) {
+            if (this.isDarkMode) {
+                this.themeIcon.textContent = '🌙';
+                this.themeText.textContent = 'Modo Escuro';
+            }
+            else {
+                this.themeIcon.textContent = '☀️';
+                this.themeText.textContent = 'Modo Claro';
+            }
+        }
+    }
+    // Inicializa animações
+    initializeAnimations() {
+        // Adiciona animação de entrada aos botões
+        const buttons = document.querySelectorAll('.button-container');
+        buttons.forEach((button, index) => {
+            button.style.animationDelay = `${index * 0.1}s`;
+        });
     }
     // Inicializa as 8 funções financeiras
     initializeFunctions() {
@@ -131,19 +205,6 @@ class HubFinanceiro {
         const notification = document.createElement('div');
         notification.className = 'notification';
         notification.textContent = message;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            font-weight: 600;
-            animation: slideInRight 0.3s ease;
-        `;
         document.body.appendChild(notification);
         // Remove após 3 segundos
         setTimeout(() => {
@@ -160,15 +221,7 @@ class HubFinanceiro {
         const welcomeMessage = document.createElement('div');
         welcomeMessage.className = 'welcome-message';
         welcomeMessage.innerHTML = `
-            <p>Bem-vindo ao Hub Financeiro! Passe o mouse sobre os botões para ver as descrições.</p>
-        `;
-        welcomeMessage.style.cssText = `
-            text-align: center;
-            color: white;
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-            opacity: 0.9;
-            animation: fadeIn 1s ease;
+            <p>Bem-vindo ao Hub Financeiro! Passe o mouse sobre os botões para ver as descrições detalhadas.</p>
         `;
         const header = document.querySelector('header');
         if (header) {

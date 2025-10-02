@@ -7,7 +7,17 @@ interface FinancialFunction {
 }
 declare class HubFinanceiro {
     private functions;
+    private isDarkMode;
+    private themeToggle;
+    private themeIcon;
+    private themeText;
     constructor();
+    private initializeTheme;
+    private applyTheme;
+    private setupThemeToggle;
+    private toggleTheme;
+    private updateThemeToggleUI;
+    private initializeAnimations;
     private initializeFunctions;
     private setupEventListeners;
     private executeFunction;
