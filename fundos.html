@@ -9,6 +9,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 </head>
 <body>
+    <!-- Animated Background -->
+    <div id="animatedBackground" class="animated-background"></div>
+    
+    <!-- Theme Toggle Button -->
+
     <div class="container">
         <header class="page-header">
             <button class="back-button" onclick="window.location.href='index.html'">← Voltar ao Hub</button>
@@ -1139,6 +1144,19 @@
                 closeModal();
             }
         }
+
+
+
+        // Initialize theme and background when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Fundos Comparator: DOM loaded, initializing...');
+            
+            // Set dark theme as default
+            document.documentElement.classList.add('dark-theme');
+            document.documentElement.classList.remove('light-theme');
+            
+            console.log('Fundos Comparator: Initialized successfully!');
+        });
     </script>
 </body>
 </html>

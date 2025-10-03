@@ -1,4 +1,7 @@
 // Hub Financeiro - Aplicação de funções financeiras
+
+// Declaração de tipos para Lottie
+
 // Interface para definir as funções financeiras
 interface FinancialFunction {
     id: string;
@@ -11,86 +14,23 @@ interface FinancialFunction {
 // Classe principal do Hub Financeiro
 class HubFinanceiro {
     private functions: FinancialFunction[] = [];
-    private isDarkMode: boolean = true;
-    private themeToggle: HTMLElement | null = null;
-    private themeIcon: HTMLElement | null = null;
-    private themeText: HTMLElement | null = null;
 
     constructor() {
         console.log('HubFinanceiro: Inicializando...');
         this.initializeTheme();
         this.initializeFunctions();
         this.setupEventListeners();
-        this.setupThemeToggle();
         this.addWelcomeMessage();
         this.initializeAnimations();
         console.log('HubFinanceiro: Inicializado com sucesso!');
     }
 
-    // Inicializa o tema
+    // Inicializa o tema (apenas modo escuro)
     private initializeTheme(): void {
-        // Verifica se há preferência salva no localStorage
-        const savedTheme = localStorage.getItem('hub-financeiro-theme');
-        if (savedTheme) {
-            this.isDarkMode = savedTheme === 'dark';
-        } else {
-            // Verifica preferência do sistema
-            this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        }
-        
-        this.applyTheme();
-    }
-
-    // Aplica o tema atual
-    private applyTheme(): void {
+        // Define apenas o tema escuro como padrão
         const root = document.documentElement;
-        
-        if (this.isDarkMode) {
-            root.classList.add('dark-theme');
-            root.classList.remove('light-theme');
-        } else {
-            root.classList.add('light-theme');
-            root.classList.remove('dark-theme');
-        }
-        
-        // Salva a preferência
-        localStorage.setItem('hub-financeiro-theme', this.isDarkMode ? 'dark' : 'light');
-    }
-
-    // Configura o botão de alternância de tema
-    private setupThemeToggle(): void {
-        this.themeToggle = document.getElementById('themeToggle');
-        this.themeIcon = document.getElementById('themeIcon');
-        this.themeText = document.getElementById('themeText');
-        
-        if (this.themeToggle && this.themeIcon && this.themeText) {
-            this.updateThemeToggleUI();
-            
-            this.themeToggle.addEventListener('click', () => {
-                this.toggleTheme();
-            });
-        }
-    }
-
-    // Alterna entre tema claro e escuro
-    private toggleTheme(): void {
-        this.isDarkMode = !this.isDarkMode;
-        this.applyTheme();
-        this.updateThemeToggleUI();
-        this.showNotification(`Tema ${this.isDarkMode ? 'escuro' : 'claro'} ativado`);
-    }
-
-    // Atualiza a interface do botão de tema
-    private updateThemeToggleUI(): void {
-        if (this.themeIcon && this.themeText) {
-            if (this.isDarkMode) {
-                this.themeIcon.textContent = '🌙';
-                this.themeText.textContent = 'Modo Escuro';
-            } else {
-                this.themeIcon.textContent = '☀️';
-                this.themeText.textContent = 'Modo Claro';
-            }
-        }
+        root.classList.add('dark-theme');
+        root.classList.remove('light-theme');
     }
 
     // Inicializa animações
@@ -102,6 +42,7 @@ class HubFinanceiro {
         });
     }
 
+
     // Inicializa as 8 funções financeiras
     private initializeFunctions(): void {
         this.functions = [
@@ -109,56 +50,56 @@ class HubFinanceiro {
                 id: 'renda-fixa',
                 name: 'Simulador de Renda Fixa',
                 description: 'Calcule rendimento real e líquido de investimentos de renda fixa (CDB, LCI/LCA, Tesouro) com incidência de IR/IOF.',
-                icon: '📊',
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>',
                 action: () => this.openRendaFixa()
             },
             {
                 id: 'alocacao',
                 name: 'Calculadora de Alocação de Ativos',
                 description: 'Capte seu perfil de investidor e receba sugestões de alocação personalizadas com questionário interativo.',
-                icon: '🎯',
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
                 action: () => this.openAlocacao()
             },
             {
                 id: 'indicadores',
                 name: 'Dashboard de Indicadores Econômicos',
                 description: 'Monitore Selic, CDI, IPCA, Ibovespa, USD/BRL com histórico e gráficos em tempo real.',
-                icon: '📈',
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>',
                 action: () => this.openIndicadores()
             },
             {
                 id: 'impostos-invest',
                 name: 'Calculadora de Imposto sobre Investimentos',
                 description: 'Calcule IR sobre investimentos, importe operações via CSV e gere relatórios detalhados.',
-                icon: '📋',
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>',
                 action: () => this.openImpostosInvest()
             },
             {
                 id: 'fundos',
                 name: 'Comparador de Fundos e ETFs',
                 description: 'Pesquise e compare fundos/ETFs com métricas chave: CAGR, volatilidade, Sharpe e drawdown.',
-                icon: '🏦',
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
                 action: () => this.openFundos()
             },
             {
                 id: 'quiz',
                 name: 'Quiz de Educação Financeira',
                 description: 'Gamificação do aprendizado financeiro com perguntas, níveis, ranking e sistema de badges.',
-                icon: '🎓',
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>',
                 action: () => this.openQuiz()
             },
             {
                 id: 'emprestimo',
                 name: 'Simulador de Empréstimos',
                 description: 'Calcule parcelas, CET e impacto no orçamento com sistema Price e amortização detalhada.',
-                icon: '💰',
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>',
                 action: () => this.openEmprestimo()
             },
             {
                 id: 'financiamento',
                 name: 'Simulador de Financiamentos (SAC x PRICE)',
                 description: 'Compare financiamento de imóvel/veículo entre sistemas SAC e PRICE com tabelas detalhadas.',
-                icon: '🏠',
+                icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>',
                 action: () => this.openFinanciamento()
             }
         ];

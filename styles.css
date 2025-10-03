@@ -44,31 +44,6 @@
     --shadow-glow: rgba(32, 201, 151, 0.2);
 }
 
-/* Light Theme */
-.light-theme {
-    /* Light Theme Colors */
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --bg-tertiary: #e9ecef;
-    --bg-card: #ffffff;
-    --bg-hover: #f1f3f4;
-    
-    /* Text Colors */
-    --text-primary: #212529;
-    --text-secondary: #6c757d;
-    --text-muted: #adb5bd;
-    --text-accent: #20c997;
-    
-    /* Border Colors */
-    --border-primary: #dee2e6;
-    --border-secondary: #e9ecef;
-    --border-accent: #20c997;
-    
-    /* Shadow Colors */
-    --shadow-primary: rgba(0, 0, 0, 0.1);
-    --shadow-secondary: rgba(0, 0, 0, 0.05);
-    --shadow-glow: rgba(32, 201, 151, 0.15);
-}
 
 body {
     font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -78,6 +53,246 @@ body {
     line-height: 1.6;
     overflow-x: hidden;
     transition: all var(--transition-normal);
+    position: relative;
+}
+
+/* Animated Gradient Background */
+.animated-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(-45deg, 
+        #1a1a1a, 
+        #2a2a2a, 
+        #1a2a2a, 
+        #2a1a2a, 
+        #1a2a1a, 
+        #2a2a1a
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+.dark-theme .animated-background {
+    background: linear-gradient(-45deg, 
+        #1a1a1a, 
+        #2a2a2a, 
+        #1a2a2a, 
+        #2a1a2a, 
+        #1a2a1a, 
+        #2a2a1a
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+
+/* Gradient Animation Keyframes */
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    25% {
+        background-position: 100% 50%;
+    }
+    50% {
+        background-position: 100% 100%;
+    }
+    75% {
+        background-position: 0% 100%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Additional animated elements for depth */
+.animated-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 80%, rgba(32, 227, 178, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 127, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(64, 224, 208, 0.1) 0%, transparent 50%);
+    animation: floatingOrbs 20s ease-in-out infinite;
+}
+
+.animated-background::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 60% 60%, rgba(32, 227, 178, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 90% 90%, rgba(0, 255, 127, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 10% 10%, rgba(64, 224, 208, 0.05) 0%, transparent 50%);
+    animation: floatingOrbs 25s ease-in-out infinite reverse;
+}
+
+@keyframes floatingOrbs {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.7;
+    }
+    25% {
+        transform: translate(20px, -20px) scale(1.1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translate(-20px, 20px) scale(0.9);
+        opacity: 0.8;
+    }
+    75% {
+        transform: translate(20px, 20px) scale(1.05);
+        opacity: 0.6;
+    }
+}
+
+/* Responsive adjustments for animated background */
+@media (max-width: 768px) {
+    .animated-background {
+        animation-duration: 20s;
+    }
+    
+    .animated-background::before,
+    .animated-background::after {
+        animation-duration: 30s;
+    }
+}
+
+@media (max-width: 480px) {
+    .animated-background {
+        animation-duration: 25s;
+    }
+    
+    .animated-background::before,
+    .animated-background::after {
+        animation-duration: 35s;
+    }
+}
+
+/* Main Footer */
+.main-footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-top: 3rem;
+}
+
+.footer-link {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    transition: all var(--transition-normal);
+    opacity: 0.8;
+}
+
+.footer-link:hover {
+    opacity: 1;
+    text-decoration: underline;
+    color: var(--accent-primary);
+}
+
+.footer-link:active {
+    opacity: 0.9;
+    transition: all var(--transition-fast);
+}
+
+/* Responsive adjustments for footer */
+@media (max-width: 768px) {
+    .main-footer {
+        padding: 1.5rem 1rem;
+        margin-top: 2rem;
+    }
+    
+    .footer-link {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-footer {
+        padding: 1rem 0.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .footer-link {
+        font-size: 0.75rem;
+    }
+}
+
+/* Floating Developer Credit Button */
+.floating-credit-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 25px;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 12px var(--shadow-primary);
+    backdrop-filter: blur(10px);
+    transition: all var(--transition-normal);
+    z-index: 1000;
+    opacity: 0.8;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.floating-credit-button:hover {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 20px var(--shadow-primary);
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border-color: var(--accent-primary);
+}
+
+.floating-credit-button:active {
+    transform: translateY(0) scale(1.02);
+    transition: all var(--transition-fast);
+}
+
+.floating-credit-button .credit-text {
+    display: block;
+    transition: all var(--transition-normal);
+}
+
+/* Responsive adjustments for floating button */
+@media (max-width: 768px) {
+    .floating-credit-button {
+        bottom: 15px;
+        right: 15px;
+        padding: 6px 12px;
+        font-size: 0.7rem;
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .floating-credit-button {
+        bottom: 10px;
+        right: 10px;
+        padding: 5px 10px;
+        font-size: 0.65rem;
+        max-width: 120px;
+    }
 }
 
 .container {
@@ -88,33 +303,6 @@ body {
     position: relative;
 }
 
-/* Theme Toggle Button */
-.theme-toggle {
-    position: fixed;
-    top: 2rem;
-    right: 2rem;
-    z-index: 1000;
-    background: var(--bg-card);
-    border: 1px solid var(--border-primary);
-    border-radius: 50px;
-    padding: 0.75rem 1.5rem;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px var(--shadow-primary);
-}
-
-.theme-toggle:hover {
-    background: var(--bg-hover);
-    border-color: var(--accent-primary);
-    box-shadow: 0 6px 25px var(--shadow-glow);
-    transform: translateY(-2px);
-}
-
-.theme-toggle:active {
-    transform: translateY(0);
-}
 
 header {
     text-align: center;
@@ -240,6 +428,19 @@ header p {
     transition: all var(--transition-normal);
     transform: scale(1) rotate(0deg);
     filter: drop-shadow(0 0 10px var(--shadow-glow));
+    width: 3.5rem;
+    height: 3.5rem;
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+    transition: all var(--transition-normal);
 }
 
 .financial-button:hover .button-icon {
@@ -333,12 +534,6 @@ header p {
         padding: 1.5rem 1rem;
     }
     
-    .theme-toggle {
-        top: 1rem;
-        right: 1rem;
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-    }
     
     header {
         margin-bottom: 3rem;
@@ -362,6 +557,8 @@ header p {
     
     .button-icon {
         font-size: 3rem;
+        width: 3rem;
+        height: 3rem;
     }
     
     .button-title {
@@ -374,12 +571,6 @@ header p {
         padding: 1rem 0.5rem;
     }
     
-    .theme-toggle {
-        top: 0.5rem;
-        right: 0.5rem;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
     
     header {
         margin-bottom: 2rem;
@@ -397,6 +588,8 @@ header p {
     .button-icon {
         font-size: 2.5rem;
         margin-bottom: 0.5rem;
+        width: 2.5rem;
+        height: 2.5rem;
     }
     
     .button-title {

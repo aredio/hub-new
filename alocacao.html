@@ -14,11 +14,10 @@
     <meta name="keywords" content="alocação de ativos, perfil investidor, questionário, investimentos, diversificação">
 </head>
 <body>
+    <!-- Animated Background -->
+    <div id="animatedBackground" class="animated-background"></div>
+    
     <!-- Theme Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
-        <span id="themeIcon">🌙</span>
-        <span id="themeText">Modo Escuro</span>
-    </button>
 
     <div class="container">
         <header class="page-header">
@@ -391,67 +390,13 @@
             URL.revokeObjectURL(url);
         }
         
-        // Theme Toggle Functionality
-        function initializeTheme() {
-            const savedTheme = localStorage.getItem('hub-financeiro-theme');
-            const isDarkMode = savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            const root = document.documentElement;
-            if (isDarkMode) {
-                root.classList.add('dark-theme');
-                root.classList.remove('light-theme');
-            } else {
-                root.classList.add('light-theme');
-                root.classList.remove('dark-theme');
-            }
-            
-            updateThemeToggleUI(isDarkMode);
-        }
-
-        function updateThemeToggleUI(isDarkMode) {
-            const themeIcon = document.getElementById('themeIcon');
-            const themeText = document.getElementById('themeText');
-            
-            if (themeIcon && themeText) {
-                if (isDarkMode) {
-                    themeIcon.textContent = '🌙';
-                    themeText.textContent = 'Modo Escuro';
-                } else {
-                    themeIcon.textContent = '☀️';
-                    themeText.textContent = 'Modo Claro';
-                }
-            }
-        }
-
-        function toggleTheme() {
-            const root = document.documentElement;
-            const isDarkMode = root.classList.contains('dark-theme');
-            
-            if (isDarkMode) {
-                root.classList.remove('dark-theme');
-                root.classList.add('light-theme');
-                localStorage.setItem('hub-financeiro-theme', 'light');
-                updateThemeToggleUI(false);
-            } else {
-                root.classList.remove('light-theme');
-                root.classList.add('dark-theme');
-                localStorage.setItem('hub-financeiro-theme', 'dark');
-                updateThemeToggleUI(true);
-            }
-        }
-
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Asset Allocation Calculator: DOM loaded, initializing...');
             
-            // Initialize theme
-            initializeTheme();
-            
-            // Setup theme toggle
-            const themeToggle = document.getElementById('themeToggle');
-            if (themeToggle) {
-                themeToggle.addEventListener('click', toggleTheme);
-            }
+            // Set dark theme as default
+            document.documentElement.classList.add('dark-theme');
+            document.documentElement.classList.remove('light-theme');
             
             calculator = { currentQuestion, answers, questions };
             loadQuestion();

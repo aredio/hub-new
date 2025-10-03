@@ -12,11 +12,10 @@
     <meta name="keywords" content="finanças, investimentos, calculadora, simulador, renda fixa, alocação">
 </head>
 <body>
+    <!-- Animated Background -->
+    <div id="animatedBackground" class="animated-background"></div>
+    
     <!-- Theme Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
-        <span id="themeIcon">🌙</span>
-        <span id="themeText">Modo Escuro</span>
-    </button>
 
     <div class="container">
         <header>
@@ -27,7 +26,7 @@
         <main class="buttons-grid">
             <div class="button-container" data-function="renda-fixa">
                 <button class="financial-button">
-                    <span class="button-icon">📊</span>
+                    <span class="button-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></span>
                     <span class="button-title">Renda Fixa</span>
                     <div class="button-description">
                         <h3>Simulador de Renda Fixa</h3>
@@ -38,7 +37,7 @@
 
             <div class="button-container" data-function="alocacao">
                 <button class="financial-button">
-                    <span class="button-icon">🎯</span>
+                    <span class="button-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
                     <span class="button-title">Alocação</span>
                     <div class="button-description">
                         <h3>Calculadora de Alocação de Ativos</h3>
@@ -49,7 +48,7 @@
 
             <div class="button-container" data-function="indicadores">
                 <button class="financial-button">
-                    <span class="button-icon">📈</span>
+                    <span class="button-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></span>
                     <span class="button-title">Indicadores</span>
                     <div class="button-description">
                         <h3>Dashboard de Indicadores Econômicos</h3>
@@ -60,7 +59,7 @@
 
             <div class="button-container" data-function="impostos-invest">
                 <button class="financial-button">
-                    <span class="button-icon">📋</span>
+                    <span class="button-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></span>
                     <span class="button-title">Impostos Invest</span>
                     <div class="button-description">
                         <h3>Calculadora de Imposto sobre Investimentos</h3>
@@ -71,7 +70,7 @@
 
             <div class="button-container" data-function="fundos">
                 <button class="financial-button">
-                    <span class="button-icon">🏦</span>
+                    <span class="button-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>
                     <span class="button-title">Fundos</span>
                     <div class="button-description">
                         <h3>Comparador de Fundos e ETFs</h3>
@@ -82,7 +81,7 @@
 
             <div class="button-container" data-function="quiz">
                 <button class="financial-button">
-                    <span class="button-icon">🎓</span>
+                    <span class="button-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg></span>
                     <span class="button-title">Quiz CPA-20</span>
                     <div class="button-description">
                         <h3>Quiz de Educação Financeira</h3>
@@ -93,7 +92,7 @@
 
             <div class="button-container" data-function="emprestimo">
                 <button class="financial-button">
-                    <span class="button-icon">💰</span>
+                    <span class="button-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></span>
                     <span class="button-title">Empréstimo</span>
                     <div class="button-description">
                         <h3>Simulador de Empréstimos</h3>
@@ -104,7 +103,7 @@
 
             <div class="button-container" data-function="financiamento">
                 <button class="financial-button">
-                    <span class="button-icon">🏠</span>
+                    <span class="button-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
                     <span class="button-title">Financiamento</span>
                     <div class="button-description">
                         <h3>Simulador de Financiamentos (SAC x PRICE)</h3>
@@ -114,6 +113,16 @@
             </div>
         </main>
     </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <a href="https://r3dd.tech" target="_blank" rel="noopener noreferrer" class="footer-link">r3dd.tech</a>
+    </footer>
+
+    <!-- Floating Developer Credit Button -->
+    <a href="https://www.linkedin.com/in/aredio/" target="_blank" rel="noopener noreferrer" class="floating-credit-button" title="Desenvolvido por Arédio Filho">
+        <span class="credit-text">Desenvolvido por Arédio Filho</span>
+    </a>
 
     <script src="dist/main.js"></script>
 </body>

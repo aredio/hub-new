@@ -2,18 +2,55 @@
 
 .page-header {
     text-align: center;
-    margin-bottom: 2rem;
-    color: white;
+    margin-bottom: 3rem;
+    color: var(--text-primary);
     position: relative;
+    padding: 2rem 0;
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    border-radius: 20px;
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-primary);
+    backdrop-filter: blur(10px);
+}
+
+.page-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px var(--shadow-glow);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+    0% {
+        filter: brightness(1) drop-shadow(0 0 10px var(--shadow-glow));
+    }
+    100% {
+        filter: brightness(1.1) drop-shadow(0 0 20px var(--shadow-glow));
+    }
+}
+
+.page-header p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+    opacity: 0.9;
 }
 
 .back-button {
     position: absolute;
     left: 0;
     top: 0;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: none;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
     padding: 0.5rem 1rem;
     border-radius: 8px;
     cursor: pointer;
@@ -26,12 +63,23 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    animation: backButtonGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes backButtonGlow {
+    0% {
+        box-shadow: 0 4px 15px var(--shadow-glow), 0 0 10px rgba(32, 201, 151, 0.3);
+    }
+    100% {
+        box-shadow: 0 4px 15px var(--shadow-glow), 0 0 20px rgba(32, 201, 151, 0.6), 0 0 30px rgba(32, 201, 151, 0.4);
+    }
 }
 
 .back-button:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--accent-primary);
+    color: var(--bg-primary);
     transform: translateX(-5px) scale(1.08);
-    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px var(--shadow-glow);
 }
 
 .back-button:active {
@@ -48,7 +96,7 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.4);
+    background: var(--accent-primary);
     transform: translate(-50%, -50%);
     transition: width 0.4s, height 0.4s;
     pointer-events: none;
@@ -63,7 +111,7 @@
 /* Focus state for back button */
 .back-button:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 4px 15px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 3px var(--accent-primary), 0 4px 15px var(--shadow-glow);
 }
 
 .simulator-container {
@@ -75,27 +123,29 @@
 }
 
 .form-section {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
     border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-primary);
     backdrop-filter: blur(10px);
     height: fit-content;
 }
 
 .results-section {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
     border-radius: 20px;
     padding: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-primary);
     backdrop-filter: blur(10px);
 }
 
 .form-card h2 {
-    color: #2c3e50;
+    color: var(--text-primary);
     margin-bottom: 1.5rem;
     font-size: 1.5rem;
-    border-bottom: 2px solid #3498db;
+    border-bottom: 2px solid var(--accent-primary);
     padding-bottom: 0.5rem;
 }
 
@@ -113,7 +163,7 @@
 
 .form-group label {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
 }
@@ -121,18 +171,18 @@
 .form-group input,
 .form-group select {
     padding: 0.75rem;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--border-primary);
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: white;
+    background: var(--bg-card);
 }
 
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-primary);
 }
 
 .prazo-input,
@@ -171,8 +221,8 @@
 
 .simulate-button {
     width: 100%;
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
+    background: var(--accent-primary);
+    color: var(--bg-primary);
     border: none;
     padding: 1rem 2rem;
     border-radius: 12px;
@@ -185,7 +235,7 @@
 
 .simulate-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 8px 25px var(--shadow-glow);
 }
 
 .simulate-button:active {
@@ -194,10 +244,10 @@
 
 /* Resultados */
 .results-card h2 {
-    color: #2c3e50;
+    color: var(--text-primary);
     margin-bottom: 1.5rem;
     font-size: 1.5rem;
-    border-bottom: 2px solid #27ae60;
+    border-bottom: 2px solid var(--accent-secondary);
     padding-bottom: 0.5rem;
 }
 
@@ -209,21 +259,21 @@
 }
 
 .summary-card {
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    background: var(--bg-secondary);
     padding: 1.5rem;
     border-radius: 12px;
     text-align: center;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--border-primary);
     transition: all 0.3s ease;
 }
 
 .summary-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 25px var(--shadow-primary);
 }
 
 .summary-card h3 {
-    color: #2c3e50;
+    color: var(--text-primary);
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
     font-weight: 600;
@@ -232,11 +282,11 @@
 .summary-card .value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #27ae60;
+    color: var(--success-color);
 }
 
 .chart-container {
-    background: white;
+    background: var(--bg-card);
     padding: 1.5rem;
     border-radius: 12px;
     margin-bottom: 2rem;
@@ -244,7 +294,7 @@
 }
 
 .chart-container h3 {
-    color: #2c3e50;
+    color: var(--text-primary);
     margin-bottom: 1rem;
     font-size: 1.2rem;
 }
@@ -254,14 +304,14 @@
 }
 
 .table-container {
-    background: white;
+    background: var(--bg-card);
     padding: 1.5rem;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .table-container h3 {
-    color: #2c3e50;
+    color: var(--text-primary);
     margin-bottom: 1rem;
     font-size: 1.2rem;
 }
@@ -273,8 +323,8 @@
 }
 
 .export-button {
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
-    color: white;
+    background: var(--accent-secondary);
+    color: var(--bg-primary);
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 8px;
@@ -303,19 +353,19 @@ table {
 th, td {
     padding: 0.75rem;
     text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--border-primary);
 }
 
 th {
-    background: #f8f9fa;
+    background: var(--bg-secondary);
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text-primary);
     position: sticky;
     top: 0;
 }
 
 tbody tr:hover {
-    background: #f8f9fa;
+    background: var(--bg-secondary);
 }
 
 /* Responsividade */
